@@ -105,3 +105,38 @@ class Profile:
             "iwad": self.iwad.to_json(),
             "files": [f.to_json() for f in self.files or []],
         }
+
+
+@dataclass
+class LoaderApp:
+    source_ports: dict[str, SourcePort]
+    profiles: dict[str, Profile]
+
+    @classmethod
+    def from_json(cls, d):
+        source_ports, profiles = {}, {}
+        source_ports_json = d["source_ports"]
+        for source_port_json in source_ports_json:
+            source_ports[source_port_json["name"]] = SourcePort.from_json(source_port_json)
+        profiles_json = d["profiles"]
+        for profile_json in profiles_json:
+            # Update JSON with shared source_port mapping.
+            profile_json["port"] = source_ports[profile_json["port"]].to_json()
+            profiles[profile_json["name"]] = Profile.from_json(profile_json)
+        return LoaderApp(
+            source_ports=source_ports,
+            profiles=profiles,
+        )
+
+    def to_json(self):
+        profiles_json = {}
+        for name, profile in self.profiles.items():
+            profile_json = profile.to_json()
+            profile_json["port"] = profile_json["port"]["name"]
+            profiles_json[name] = profile_json
+        return {
+            "source_ports": {
+                name: source_port.to_json() for name, source_port in self.source_ports.items()
+            },
+            "profiles": profiles_json,
+        }
