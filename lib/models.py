@@ -22,6 +22,13 @@ class Resource:
     def is_directory(self):
         return os.path.isdir(self.path)
 
+    @classmethod
+    def from_json(cls, d):
+        return cls(path=d["path"])
+
+    def to_json(self):
+        return {"path": self.path}
+
 
 @dataclass
 class SourcePort:
@@ -46,6 +53,23 @@ class SourcePort:
             pass
         subprocess.call(cmd)
 
+    @classmethod
+    def from_json(cls, d):
+        return cls(
+            name=d["name"],
+            executable=Resource.from_json(d["executable"]),
+            description=d.get("description"),
+        )
+
+    def to_json(self):
+        return {
+            "name": self.name,
+            "executable": {
+                "path": self.executable.path,
+            },
+            "description": self.description,
+        }
+
 
 @dataclass
 class Profile:
@@ -64,3 +88,20 @@ class Profile:
             args.append("-file")
             args.append(file.path)
         self.port.launch(args)
+
+    @classmethod
+    def from_json(cls, d):
+        return cls(
+            name=d["name"],
+            port=SourcePort.from_json(d["port"]),
+            iwad=Resource.from_json(d["iwad"]),
+            files=[Resource.from_json(f) for f in d["files"]],
+        )
+
+    def to_json(self):
+        return {
+            "name": self.name,
+            "port": self.port.to_json(),
+            "iwad": self.iwad.to_json(),
+            "files": [f.to_json() for f in self.files or []],
+        }
