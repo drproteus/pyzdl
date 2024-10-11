@@ -117,7 +117,9 @@ class LoaderApp:
         source_ports, profiles = {}, {}
         source_ports_json = d["source_ports"]
         for source_port_json in source_ports_json:
-            source_ports[source_port_json["name"]] = SourcePort.from_json(source_port_json)
+            source_ports[source_port_json["name"]] = SourcePort.from_json(
+                source_port_json
+            )
         profiles_json = d["profiles"]
         for profile_json in profiles_json:
             # Update JSON with shared source_port mapping.
@@ -136,7 +138,8 @@ class LoaderApp:
             profiles_json[name] = profile_json
         return {
             "source_ports": {
-                name: source_port.to_json() for name, source_port in self.source_ports.items()
+                name: source_port.to_json()
+                for name, source_port in self.source_ports.items()
             },
             "profiles": profiles_json,
         }
