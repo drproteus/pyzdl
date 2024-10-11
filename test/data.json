@@ -1,0 +1,27 @@
+{
+  "source_ports": [
+    {
+      "name": "GZDoom",
+      "executable": {
+        "path": "/Applications/GZDoom.app"
+      }
+    }
+  ],
+  "profiles": [
+    {
+      "name": "Brutal Doom",
+      "port": "GZDoom",
+      "iwad": {
+        "path": "/Users/jake/OneDrive/Games/wads/DOOM.WAD"
+      },
+      "files": [
+        {
+          "path": "/Users/jake/OneDrive/Games/wads/brutalv22test4/brutalv22test4.pk3"
+        },
+        {
+          "path": "/Users/jake/OneDrive/Games/wads/MusicPackV2.1/DOOMMETALMODIFIED.wad"
+        }
+      ]
+    }
+  ]
+}
