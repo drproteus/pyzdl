@@ -7,23 +7,42 @@ class MainFrame(wx.Frame):
     def __init__(self, app):
         super().__init__(parent=None, title="pyZDL")
 
-        box = wx.ComboBox(
+        choices = list(app.profiles.keys())
+        profile_list = wx.ListBox(
             self,
-            choices=list(app.profiles.keys()),
-            style=wx.TE_PROCESS_ENTER | wx.TE_READONLY,
+            choices=choices,
+            style=wx.LB_SINGLE,
+            size=(140, 140),
         )
-        button = wx.Button(self, label="Run", pos=(0, 32))
+        run_button = wx.Button(self, label="Run", pos=(10, 190))
+
+        profile_list.Selection = 0
+        profile_name = choices[profile_list.Selection]
+        profile = app.profiles.get(profile_name, None)
+        info_box = wx.StaticText(
+            self,
+            label=profile.get_description(),
+            pos=(140, 2),
+            size=(254, 200),
+        )
 
         def on_click(*args, **kwargs):
-            profile_name = box.Value
+            profile_name = choices[profile_list.Selection]
             profile = app.profiles.get(profile_name, None)
             if not profile:
                 raise click.ClickException(f"Could not find {profile_name} in config.")
             click.echo(f"Launching {profile_name}")
             profile.launch()
 
-        button.Bind(wx.EVT_LEFT_UP, on_click)
-        box.Bind(wx.EVT_TEXT_ENTER, on_click)
+        def on_update(*args, **kwargs):
+            profile_name = choices[profile_list.Selection]
+            profile = app.profiles.get(profile_name, None)
+            info_box.Label = profile.get_description()
+
+        run_button.Bind(wx.EVT_LEFT_UP, on_click)
+        profile_list.Bind(wx.EVT_TEXT_ENTER, on_click)
+        profile_list.Bind(wx.EVT_LISTBOX, on_update)
+        profile_list.Bind(wx.EVT_LISTBOX_DCLICK, on_click)
         self.Show()
 
 
