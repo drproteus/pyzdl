@@ -1,12 +1,17 @@
 import wx
 import click
-from lib.util import default_options, setup
+from lib.util import default_options
 
 
 class MainFrame(wx.Frame):
     def __init__(self, app):
         super().__init__(parent=None, title="pyZDL")
-        box = wx.ComboBox(self, choices=list(app.profiles.keys()))
+
+        box = wx.ComboBox(
+            self,
+            choices=list(app.profiles.keys()),
+            style=wx.TE_PROCESS_ENTER | wx.TE_READONLY,
+        )
         button = wx.Button(self, label="Run", pos=(0, 32))
 
         def on_click(*args, **kwargs):
@@ -18,7 +23,9 @@ class MainFrame(wx.Frame):
             profile.launch()
 
         button.Bind(wx.EVT_LEFT_UP, on_click)
+        box.Bind(wx.EVT_TEXT_ENTER, on_click)
         self.Show()
+
 
 @click.command("pyzdl_gui")
 @default_options

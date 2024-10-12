@@ -2,7 +2,6 @@ import click
 from lib.util import setup, write_config, default_options
 
 
-
 @click.group("pyzdl")
 def pyzdl():
     pass
