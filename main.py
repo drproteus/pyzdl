@@ -24,7 +24,7 @@ def default_options(fn):
 
 def write_config(app, config_path):
     with open(config_path, "w") as f:
-        json.dump(app.to_json(), f)
+        json.dump(app.to_json(), f, indent=2)
 
 
 @click.group("pyzdl")
