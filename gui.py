@@ -38,11 +38,25 @@ class MainFrame(wx.Frame):
             profile_name = choices[profile_list.Selection]
             profile = app.profiles.get(profile_name, None)
             info_box.Label = profile.get_description()
+            args_box.Value = profile.args or ""
+
+        def on_args_edit(*args, **kwargs):
+            profile_name = choices[profile_list.Selection]
+            profile = app.profiles.get(profile_name, None)
+            profile.args = args_box.Value
+
+        args_box = wx.TextCtrl(
+            self,
+            value=profile.args,
+            pos=(100, 190),
+            size=(190, 20)
+        )
 
         run_button.Bind(wx.EVT_LEFT_UP, on_click)
         profile_list.Bind(wx.EVT_TEXT_ENTER, on_click)
         profile_list.Bind(wx.EVT_LISTBOX, on_update)
         profile_list.Bind(wx.EVT_LISTBOX_DCLICK, on_click)
+        args_box.Bind(wx.EVT_TEXT, on_args_edit)
         self.Show()
 
 
