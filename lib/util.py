@@ -9,14 +9,9 @@ CONFIG_PATH = Path.home().joinpath(".config", "pyzdl", "config.json")
 
 
 def setup(config_path):
-    click.echo(f"Loading config from {config_path}", err=True)
     with open(config_path, "r") as f:
         data_json = json.load(f)
-    app = LoaderApp.from_json(data_json)
-    click.echo("Available profiles:")
-    for name, _ in app.profiles.items():
-        click.echo(f"* {name}", err=True)
-    return app
+    return LoaderApp.from_json(data_json)
 
 
 def write_config(app, config_path):

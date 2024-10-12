@@ -21,6 +21,10 @@ class MainFrame(wx.Frame):
 @click.command("pyzdl_gui")
 @default_options
 def main(app, config_path):
+    click.echo(f"Loading config from {config_path}", err=True)
+    click.echo("Available profiles:")
+    for name, _ in app.profiles.items():
+        click.echo(f"* {name}", err=True)
     gui = wx.App()
     frame = MainFrame(app)
     gui.MainLoop()
