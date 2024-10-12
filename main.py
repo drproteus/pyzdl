@@ -1,19 +1,6 @@
 import click
-from lib.util import setup, write_config
+from lib.util import setup, write_config, default_options
 
-
-def default_options(fn):
-    @click.option(
-        "--config",
-        "config_path",
-        default="./test/data.json",
-        type=click.Path(exists=True),
-    )
-    def wrapped(config_path, *args, **kwargs):
-        app = setup(config_path)
-        return fn(app, config_path, *args, **kwargs)
-
-    return wrapped
 
 
 @click.group("pyzdl")
