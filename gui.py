@@ -11,7 +11,9 @@ class MainFrame(wx.Frame):
 
         def on_click(*args, **kwargs):
             profile_name = box.Value
-            app.get_profile(profile_name).launch()
+            profile = app.get_profile(profile_name)
+            click.echo(f"Launching {profile_name}")
+            profile.launch()
 
         button.Bind(wx.EVT_LEFT_UP, on_click)
         self.Show()
