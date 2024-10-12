@@ -13,6 +13,10 @@ class LoaderError(Exception):
 class Resource:
     path: str
 
+    @property
+    def name(self):
+        return os.path.basename(self.path)
+
     def exists(self):
         return os.path.exists(self.path)
 
@@ -105,6 +109,14 @@ class Profile:
             "iwad": self.iwad.to_json(),
             "files": [f.to_json() for f in self.files or []],
         }
+
+    def get_description(self):
+        desc = self.iwad.name
+        if self.files:
+            desc += "\n"
+        for file in self.files or []:
+            desc += f"\n{file.name}"
+        return desc
 
 
 @dataclass
