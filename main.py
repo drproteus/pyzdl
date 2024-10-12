@@ -85,5 +85,14 @@ def add_profile(app, config_path, name, port, iwad, files):
     write_config(app, config_path)
 
 
+@pyzdl.command("rm-profile")
+@click.argument("name", type=click.STRING)
+@default_options
+def rm_profile(app, config_path, name):
+    profile = app.rm_profile(name)
+    if profile:
+        write_config(app, config_path)
+
+
 if __name__ == "__main__":
     pyzdl()
