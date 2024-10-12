@@ -43,14 +43,14 @@ class SourcePort:
     def launch(self, args=None):
         args = args or []
         cmd = [self.executable.path]
-        if args:
-            cmd += ["--args"]
-            cmd += args
         if sys.platform == "darwin":
             cmd = ["open"] + cmd
+            if args:
+                cmd += ["--args"]
+                cmd += args
         elif sys.platform == "win32" or sys.platform == "linux":
             # TODO: verify this later, developing initially on macOS
-            pass
+            cmd += args
         subprocess.call(cmd)
 
     @classmethod
