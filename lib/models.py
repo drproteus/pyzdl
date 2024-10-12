@@ -131,15 +131,37 @@ class LoaderApp:
         )
 
     def to_json(self):
-        profiles_json = {}
+        profiles_json = []
         for name, profile in self.profiles.items():
             profile_json = profile.to_json()
             profile_json["port"] = profile_json["port"]["name"]
-            profiles_json[name] = profile_json
+            profiles_json.append(profile_json)
         return {
-            "source_ports": {
-                name: source_port.to_json()
-                for name, source_port in self.source_ports.items()
-            },
+            "source_ports": [
+                source_port.to_json() for name, source_port in self.source_ports.items()
+            ],
             "profiles": profiles_json,
         }
+
+    def add_source_port(self, name, path, update=True):
+        if not update and name in self.source_ports:
+            raise LoaderError(f"{name} already exists, use update=True to overwrite.")
+        if not os.path.exists(path):
+            raise LoaderError(f"{path} does not exist.")
+        self.source_ports[name] = SourcePort(name=name, executable=Resource(path=path))
+
+    def rm_source_port(self, name):
+        return self.source_ports.pop(name, None)
+
+    def add_profile(self, name, port_name, iwad_path, files):
+        port = self.source_ports[port_name]
+        profile = Profile(
+            name=name,
+            port=port,
+            iwad=Resource(path=iwad_path),
+            files=[Resource(path=file_path) for file_path in files],
+        )
+        self.profiles[name] = profile
+
+    def rm_profile(self, name):
+        return self.profiles.pop(name, None)
