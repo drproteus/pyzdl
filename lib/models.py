@@ -143,6 +143,11 @@ class LoaderApp:
             "profiles": profiles_json,
         }
 
+    def get_profile(self, name):
+        for profile_name, profile in self.profiles.items():
+            if profile_name == name:
+                return profile
+
     def add_source_port(self, name, path, update=True):
         if not update and name in self.source_ports:
             raise LoaderError(f"{name} already exists, use update=True to overwrite.")
