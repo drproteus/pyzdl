@@ -144,9 +144,7 @@ class LoaderApp:
         }
 
     def get_profile(self, name):
-        for profile_name, profile in self.profiles.items():
-            if profile_name == name:
-                return profile
+        return self.profiles.get(name, None)
 
     def add_source_port(self, name, path, update=True):
         if not update and name in self.source_ports:

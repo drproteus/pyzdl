@@ -11,7 +11,9 @@ class MainFrame(wx.Frame):
 
         def on_click(*args, **kwargs):
             profile_name = box.Value
-            profile = app.get_profile(profile_name)
+            profile = app.profiles.get(profile_name, None)
+            if not profile:
+                raise click.ClickException(f"Could not find {profile_name} in config.")
             click.echo(f"Launching {profile_name}")
             profile.launch()
 
