@@ -95,7 +95,7 @@ class Profile:
             name=d["name"],
             port=SourcePort.from_json(d["port"]),
             iwad=Resource.from_json(d["iwad"]),
-            files=[Resource.from_json(f) for f in d["files"]],
+            files=[Resource.from_json(f) for f in d.get("files", [])],
         )
 
     def to_json(self):
