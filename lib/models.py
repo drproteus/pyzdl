@@ -81,6 +81,7 @@ class Profile:
     port: SourcePort
     iwad: Resource
     files: Optional[list[Resource]]
+    args: Optional[str]
 
     def launch(self):
         args = ["-iwad", self.iwad.path]
@@ -91,6 +92,7 @@ class Profile:
                 raise LoaderError(f"{file.path} should be a file, not a directory!")
             args.append("-file")
             args.append(file.path)
+        args += self.args or ""
         self.port.launch(args)
 
     @classmethod
@@ -100,6 +102,7 @@ class Profile:
             port=SourcePort.from_json(d["port"]),
             iwad=Resource.from_json(d["iwad"]),
             files=[Resource.from_json(f) for f in d.get("files", [])],
+            args=d.get("args", ""),
         )
 
     def to_json(self):
