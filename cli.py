@@ -23,27 +23,6 @@ def ports():
     pass
 
 
-@profiles.command("run")
-@click.argument(
-    "profile_name",
-    required=False,
-    type=click.STRING,
-)
-@default_options
-def run(app, config_path, profile_name):
-    app = setup(config_path=config_path)
-    if not app.profiles:
-        raise click.ClickException("No available profiles.")
-    if not profile_name:
-        profile_name = next(iter(app.profiles.keys()))
-        click.echo(f"No profile given, assuming {profile_name}.", err=True)
-    try:
-        profile = app.profiles[profile_name]
-    except KeyError:
-        raise click.ClickException(f"Could not find profile {profile_name} in config.")
-    profile.launch()
-
-
 @profiles.command("ls")
 @default_options
 def ls_profiles(app, config_path):
@@ -151,6 +130,34 @@ def show_config(app, config_path, format_type):
             click.get_text_stream("stdout"),
             indent=2,
         )
+
+
+@pyzdl.group("run")
+def run():
+    pass
+
+
+@run.command("profile")
+@click.argument("name", required=False)
+@default_options
+def run_profile(app, config_path, name):
+    if not app.profiles:
+        raise click.ClickException("No available profiles.")
+    if not name:
+        name = next(iter(app.profiles.keys()))
+        click.echo(f"No profile given, assuming {name}.", err=True)
+    try:
+        profile = app.profiles[name]
+    except KeyError:
+        raise click.ClickException(f"Could not find profile {name} in config.")
+    profile.launch()
+
+
+@run.command("zdl")
+@click.argument("path")
+@default_options
+def run_zdl(app, config_path, path):
+    app.launch_zdl(path)
 
 
 if __name__ == "__main__":

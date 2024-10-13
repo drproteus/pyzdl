@@ -151,6 +151,7 @@ class Profile:
         config["zdl.save"] = {
             "port": self.port.name,
             "iwad": self.iwad.name,
+            "extra": self.args or "",
         }
         for i, file in enumerate(self.files or []):
             config["zdl.save"][f"file{i}"] = file.path
@@ -284,3 +285,19 @@ class LoaderApp:
             iwads=iwads,
             profiles={},
         )
+
+    def launch_zdl(self, path):
+        config = configparser.ConfigParser()
+        config.read(path)
+        zdl_config = config["zdl.save"]
+        profile = Profile(
+            name=path,
+            port=self.source_ports[zdl_config["port"]],
+            iwad=self.iwads[zdl_config["iwad"]],
+            files=[],
+            args=zdl_config.get("extra", ""),
+        )
+        for key, path in zdl_config.items():
+            if re.match(r"file\d+", key):
+                profile.files.append(Resource(path=path))
+        profile.launch()
