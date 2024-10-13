@@ -101,20 +101,12 @@ def rm_profile(app, config_path, name):
         write_config(app, config_path)
 
 
-@profiles.command("to-zdl")
-@click.argument("name", type=click.STRING)
-@default_options
-def zdl_profile(app, config_path, name):
-    profile = app.profiles[name]
-    profile.to_zdl_ini(click.get_text_stream("stdout"))
-
-
 @pyzdl.group("config")
 def config():
     pass
 
 
-@config.command("show")
+@config.command("inspect")
 @click.option(
     "--format",
     "format_type",
@@ -167,6 +159,24 @@ def run_zdl(app, config_path, path):
 @default_options
 def import_profile(app, config_path, path, name):
     app.import_profile(path, name)
+
+
+@profiles.command("inspect")
+@click.argument("name")
+@click.option(
+    "--format",
+    "format_type",
+    type=click.Choice(choices=["json", "zdl", "ini"]),
+    default="json",
+)
+@default_options
+def inspect_profile(app, config_path, name, format_type):
+    fp = click.get_text_stream("stdout")
+    profile = app.profiles[name]
+    if format_type == "json":
+        json.dump(profile.to_json(), fp, indent=2)
+    elif format_type == "zdl" or format_type == "ini":
+        profile.to_zdl_ini(fp)
 
 
 pyzdl.add_command(main, "gui")
