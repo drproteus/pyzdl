@@ -1,6 +1,7 @@
 import click
 import json
 from lib.util import setup, write_config, default_options
+from gui import main
 
 
 @click.group("pyzdl")
@@ -158,6 +159,9 @@ def run_profile(app, config_path, name):
 @default_options
 def run_zdl(app, config_path, path):
     app.launch_zdl(path)
+
+
+pyzdl.add_command(main, "gui")
 
 
 if __name__ == "__main__":
