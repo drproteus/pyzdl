@@ -1,4 +1,5 @@
 import click
+import json
 from lib.util import setup, write_config, default_options
 
 
@@ -118,6 +119,30 @@ def rm_profile(app, config_path, name):
     profile = app.rm_profile(name)
     if profile:
         write_config(app, config_path)
+
+
+@pyzdl.group("config")
+def config():
+    pass
+
+
+@config.command("show")
+@click.option(
+    "--format",
+    "format_type",
+    type=click.Choice(choices=["json", "zdl", "ini"]),
+    default="json",
+)
+@default_options
+def show_config(app, config_path, format_type):
+    if format_type == "zdl" or format_type == "ini":
+        app.to_zdl_ini(click.get_text_stream("stdout"))
+    else:
+        json.dump(
+            app.to_json(),
+            click.get_text_stream("stdout"),
+            indent=2,
+        )
 
 
 if __name__ == "__main__":
