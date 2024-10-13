@@ -8,9 +8,13 @@ CONFIG_PATH = Path.home().joinpath(".config", "pyzdl", "config.json")
 
 
 def setup(config_path):
-    with open(config_path, "r") as f:
-        data_json = json.load(f)
-    return LoaderApp.from_json(data_json)
+    suffix = Path(config_path).suffix
+    if suffix == ".json":
+        with open(config_path, "r") as f:
+            data_json = json.load(f)
+        return LoaderApp.from_json(data_json)
+    elif suffix == ".ini" or suffix == ".zdl":
+        return LoaderApp.from_zdl_ini(path=config_path)
 
 
 def write_config(app, config_path):
