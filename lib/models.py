@@ -1,6 +1,8 @@
 import os
 import sys
 import subprocess
+import configparser
+import re
 from dataclasses import dataclass
 from typing import Optional
 
@@ -179,11 +181,13 @@ class LoaderApp:
         for name, profile in self.profiles.items():
             profile_json = profile.to_json()
             profile_json["port"] = profile_json["port"]["name"]
+            profile_json["iwad"] = profile_json["iwad"]["name"]
             profiles_json.append(profile_json)
         return {
             "source_ports": [
                 source_port.to_json() for name, source_port in self.source_ports.items()
             ],
+            "iwads": [iwad.to_json() for name, iwad in self.iwads.items()],
             "profiles": profiles_json,
         }
 
@@ -218,3 +222,55 @@ class LoaderApp:
 
     def rm_profile(self, name):
         return self.profiles.pop(name, None)
+
+    def to_zdl_ini(self, fp):
+        config = configparser.ConfigParser()
+        config["zdl.ports"] = {}
+        config["zdl.iwads"] = {}
+        for i, (port_name, source_port) in enumerate(self.source_ports.items()):
+            config["zdl.ports"][f"p{i}n"] = port_name
+            config["zdl.ports"][f"p{i}f"] = source_port.executable.path
+        for i, (iwad_name, iwad) in enumerate(self.iwads.items()):
+            config["zdl.iwads"][f"p{i}n"] = iwad_name
+            config["zdl.iwads"][f"p{i}f"] = iwad.path
+        config.write(fp)
+
+    @classmethod
+    def from_zdl_ini(cls, string_value=None, path=None):
+        config = configparser.ConfigParser()
+        if string_value:
+            config.read_string(string_value)
+        elif path:
+            config.read(path)
+        else:
+            raise ValueError("At least one of string_value or path required.")
+        source_ports, iwads = {}, {}
+        config_ports = config["zdl.ports"]
+        config_iwads = config["zdl.iwads"]
+
+        def get_config_indexes(section):
+            indexes = []
+            for key in section.keys():
+                search = re.search(r"p(\d+)n", key)
+                if search:
+                    indexes.append(int(search.group(1)))
+            return indexes
+
+        for i in get_config_indexes(config_ports):
+            name = config_ports[f"p{i}n"]
+            path = config_ports[f"p{i}f"]
+            source_ports[name] = SourcePort(
+                name=name,
+                executable=Resource(path=path),
+            )
+
+        for i in get_config_indexes(config_iwads):
+            name = config_iwads[f"p{i}n"]
+            path = config_iwads[f"p{i}f"]
+            iwads[name] = Iwad(name=name, iwad=Resource(path=path))
+
+        return cls(
+            source_ports=source_ports,
+            iwads=iwads,
+            profiles={},
+        )
