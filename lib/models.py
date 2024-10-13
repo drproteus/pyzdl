@@ -110,8 +110,9 @@ class Profile:
     files: Optional[list[Resource]]
     args: Optional[str]
 
-    def launch(self):
+    def launch(self, extra_args=None):
         args = ["-iwad", self.iwad.path]
+        extra_args = extra_args or []
         for file in self.files or []:
             if not file.exists():
                 raise LoaderError(f"{file.path} does not exist!")
@@ -120,6 +121,7 @@ class Profile:
             args.append("-file")
             args.append(file.path)
         args += self.args or ""
+        args += extra_args
         self.port.launch(args)
 
     @classmethod
@@ -322,9 +324,9 @@ class LoaderApp:
                 profile.files.append(Resource(path=path))
         return profile
 
-    def launch_zdl(self, path):
+    def launch_zdl(self, path, extra_args=None):
         profile = self.load_zdl(path)
-        profile.launch()
+        profile.launch(extra_args=extra_args)
 
     def import_profile(self, path, name=None):
         profile = Profile.from_file(self, path, name=name)

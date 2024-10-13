@@ -142,10 +142,11 @@ def run():
     pass
 
 
-@run.command("profile")
+@run.command("profile", context_settings={"ignore_unknown_options": True})
 @click.argument("name", required=False)
+@click.argument("extra_args", nargs=-1, type=click.UNPROCESSED)
 @default_options
-def run_profile(app, config_path, name):
+def run_profile(app, config_path, name, extra_args):
     if not app.profiles:
         raise click.ClickException("No available profiles.")
     if not name:
@@ -155,14 +156,15 @@ def run_profile(app, config_path, name):
         profile = app.profiles[name]
     except KeyError:
         raise click.ClickException(f"Could not find profile {name} in config.")
-    profile.launch()
+    profile.launch(extra_args=extra_args)
 
 
-@run.command("zdl")
+@run.command("zdl", context_settings={"ignore_unknown_options": True})
 @click.argument("path")
+@click.argument("extra_args", nargs=-1, type=click.UNPROCESSED)
 @default_options
-def run_zdl(app, config_path, path):
-    app.launch_zdl(path)
+def run_zdl(app, config_path, path, extra_args):
+    app.launch_zdl(path, extra_args=extra_args)
 
 
 @profiles.command("import")
