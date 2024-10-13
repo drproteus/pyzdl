@@ -242,8 +242,8 @@ class LoaderApp:
             config["zdl.ports"][f"p{i}n"] = port_name
             config["zdl.ports"][f"p{i}f"] = source_port.executable.path
         for i, (iwad_name, iwad) in enumerate(self.iwads.items()):
-            config["zdl.iwads"][f"p{i}n"] = iwad_name
-            config["zdl.iwads"][f"p{i}f"] = iwad.path
+            config["zdl.iwads"][f"i{i}n"] = iwad_name
+            config["zdl.iwads"][f"i{i}f"] = iwad.path
         config.write(fp)
 
     @classmethod
@@ -259,15 +259,15 @@ class LoaderApp:
         config_ports = config["zdl.ports"]
         config_iwads = config["zdl.iwads"]
 
-        def get_config_indexes(section):
+        def get_config_indexes(section, prefix):
             indexes = []
             for key in section.keys():
-                search = re.search(r"p(\d+)n", key)
+                search = re.search(r"{prefix}(\d+)n", key)
                 if search:
                     indexes.append(int(search.group(1)))
             return indexes
 
-        for i in get_config_indexes(config_ports):
+        for i in get_config_indexes(config_ports, "p"):
             name = config_ports[f"p{i}n"]
             path = config_ports[f"p{i}f"]
             source_ports[name] = SourcePort(
@@ -275,9 +275,9 @@ class LoaderApp:
                 executable=Resource(path=path),
             )
 
-        for i in get_config_indexes(config_iwads):
-            name = config_iwads[f"p{i}n"]
-            path = config_iwads[f"p{i}f"]
+        for i in get_config_indexes(config_iwads, "i"):
+            name = config_iwads[f"i{i}n"]
+            path = config_iwads[f"i{i}f"]
             iwads[name] = Iwad(name=name, iwad=Resource(path=path))
 
         return cls(
