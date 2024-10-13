@@ -7,7 +7,22 @@ def pyzdl():
     pass
 
 
-@pyzdl.command("run")
+@pyzdl.group("profiles")
+def profiles():
+    pass
+
+
+@pyzdl.group("iwads")
+def iwads():
+    pass
+
+
+@pyzdl.group("ports")
+def ports():
+    pass
+
+
+@profiles.command("run")
 @click.argument(
     "profile_name",
     required=False,
@@ -28,28 +43,28 @@ def run(app, config_path, profile_name):
     profile.launch()
 
 
-@pyzdl.command("ls-profiles")
+@profiles.command("ls")
 @default_options
 def ls_profiles(app, config_path):
     for profile_name, profile in app.profiles.items():
         click.echo(f"{profile_name} ({profile.port.name})")
 
 
-@pyzdl.command("ls-ports")
+@ports.command("ls")
 @default_options
 def ls_ports(app, config_path):
     for source_port_name, source_port in app.source_ports.items():
         click.echo(f"{source_port_name} ({source_port.executable.path})")
 
 
-@pyzdl.command("ls-iwads")
+@iwads.command("ls")
 @default_options
 def ls_iwads(app, config_path):
     for iwad_name, iwad in app.iwads.items():
         click.echo(f"{iwad_name} ({iwad.path})")
 
 
-@pyzdl.command("add-port")
+@ports.command("add")
 @click.argument("name", type=click.STRING)
 @click.argument("path", type=click.Path(exists=True))
 @default_options
@@ -58,7 +73,7 @@ def add_source_port(app, config_path, name, path):
     write_config(app, config_path)
 
 
-@pyzdl.command("rm-port")
+@ports.command("rm")
 @click.argument("name", type=click.STRING)
 @default_options
 def rm_source_port(app, config_path, name):
@@ -67,7 +82,7 @@ def rm_source_port(app, config_path, name):
         write_config(app, config_path)
 
 
-@pyzdl.command("add-iwad")
+@iwads.command("add")
 @click.argument("name", type=click.STRING)
 @click.argument("path", type=click.Path(exists=True))
 @default_options
@@ -75,7 +90,8 @@ def add_iwad(app, config_path, name, path):
     app.add_iwad(name, path)
     write_config(app, config_path)
 
-@pyzdl.command("rm-wad")
+
+@iwads.command("rm")
 @click.argument("name", type=click.STRING)
 @default_options
 def rm_iwad(app, config_path, name):
@@ -84,7 +100,7 @@ def rm_iwad(app, config_path, name):
         write_config(app, config_path)
 
 
-@pyzdl.command("add-profile")
+@profiles.command("add")
 @click.argument("name", type=click.STRING)
 @click.argument("port", type=click.STRING)
 @click.argument("iwad", type=click.STRING)
@@ -95,7 +111,7 @@ def add_profile(app, config_path, name, port, iwad, files):
     write_config(app, config_path)
 
 
-@pyzdl.command("rm-profile")
+@profiles.command("rm")
 @click.argument("name", type=click.STRING)
 @default_options
 def rm_profile(app, config_path, name):
