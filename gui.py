@@ -45,12 +45,7 @@ class MainFrame(wx.Frame):
             profile = app.profiles.get(profile_name, None)
             profile.args = args_box.Value
 
-        args_box = wx.TextCtrl(
-            self,
-            value=profile.args,
-            pos=(100, 190),
-            size=(190, 20)
-        )
+        args_box = wx.TextCtrl(self, value=profile.args, pos=(100, 190), size=(190, 20))
 
         run_button.Bind(wx.EVT_LEFT_UP, on_click)
         profile_list.Bind(wx.EVT_TEXT_ENTER, on_click)

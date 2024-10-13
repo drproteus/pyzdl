@@ -7,13 +7,19 @@
       }
     }
   ],
+  "iwads": [
+    {
+      "name": "Doom",
+      "iwad": {
+        "path": "/Users/jake/OneDrive/games/wads/DOOM.WAD"
+      }
+    }
+  ],
   "profiles": [
     {
       "name": "Brutal Doom",
       "port": "GZDoom",
-      "iwad": {
-        "path": "/Users/jake/OneDrive/Games/wads/DOOM.WAD"
-      },
+      "iwad": "Doom",
       "files": [
         {
           "path": "/Users/jake/OneDrive/Games/wads/brutalv22test4/brutalv22test4.pk3"

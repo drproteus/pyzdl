@@ -76,10 +76,33 @@ class SourcePort:
 
 
 @dataclass
+class Iwad:
+    name: str
+    iwad: Resource
+
+    @property
+    def path(self):
+        return self.iwad.path
+
+    @classmethod
+    def from_json(cls, d):
+        return cls(
+            name=d["name"],
+            iwad=Resource.from_json(d["iwad"]),
+        )
+
+    def to_json(self):
+        return {
+            "name": self.name,
+            "iwad": self.iwad.to_json(),
+        }
+
+
+@dataclass
 class Profile:
     name: str
     port: SourcePort
-    iwad: Resource
+    iwad: Iwad
     files: Optional[list[Resource]]
     args: Optional[str]
 
@@ -100,7 +123,7 @@ class Profile:
         return cls(
             name=d["name"],
             port=SourcePort.from_json(d["port"]),
-            iwad=Resource.from_json(d["iwad"]),
+            iwad=Iwad.from_json(d["iwad"]),
             files=[Resource.from_json(f) for f in d.get("files", [])],
             args=d.get("args", ""),
         )
@@ -125,23 +148,29 @@ class Profile:
 @dataclass
 class LoaderApp:
     source_ports: dict[str, SourcePort]
+    iwads: dict[str, Iwad]
     profiles: dict[str, Profile]
 
     @classmethod
     def from_json(cls, d):
-        source_ports, profiles = {}, {}
+        source_ports, iwads, profiles = {}, {}, {}
         source_ports_json = d["source_ports"]
         for source_port_json in source_ports_json:
             source_ports[source_port_json["name"]] = SourcePort.from_json(
                 source_port_json
             )
+        iwads_json = d["iwads"]
+        for iwad_json in iwads_json:
+            iwads[iwad_json["name"]] = Iwad.from_json(iwad_json)
         profiles_json = d["profiles"]
         for profile_json in profiles_json:
             # Update JSON with shared source_port mapping.
             profile_json["port"] = source_ports[profile_json["port"]].to_json()
+            profile_json["iwad"] = iwads[profile_json["iwad"]].to_json()
             profiles[profile_json["name"]] = Profile.from_json(profile_json)
         return LoaderApp(
             source_ports=source_ports,
+            iwads=iwads,
             profiles=profiles,
         )
 
@@ -171,13 +200,19 @@ class LoaderApp:
     def rm_source_port(self, name):
         return self.source_ports.pop(name, None)
 
-    def add_profile(self, name, port_name, iwad_path, files):
-        port = self.source_ports[port_name]
+    def add_iwad(self, name, path):
+        self.iwads[name] = Iwad(name=name, iwad=Resource(path=path))
+
+    def rm_iwad(self, name):
+        return self.iwads.pop(name, None)
+
+    def add_profile(self, name, port_name, iwad_name, files, args=""):
         profile = Profile(
             name=name,
-            port=port,
-            iwad=Resource(path=iwad_path),
+            port=self.source_ports[port_name],
+            iwad=self.iwads[iwad_name],
             files=[Resource(path=file_path) for file_path in files],
+            args=args,
         )
         self.profiles[name] = profile
 

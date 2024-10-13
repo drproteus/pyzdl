@@ -42,6 +42,13 @@ def ls_ports(app, config_path):
         click.echo(f"{source_port_name} ({source_port.executable.path})")
 
 
+@pyzdl.command("ls-iwads")
+@default_options
+def ls_iwads(app, config_path):
+    for iwad_name, iwad in app.iwads.items():
+        click.echo(f"{iwad_name} ({iwad.path})")
+
+
 @pyzdl.command("add-port")
 @click.argument("name", type=click.STRING)
 @click.argument("path", type=click.Path(exists=True))
@@ -60,10 +67,27 @@ def rm_source_port(app, config_path, name):
         write_config(app, config_path)
 
 
+@pyzdl.command("add-iwad")
+@click.argument("name", type=click.STRING)
+@click.argument("path", type=click.Path(exists=True))
+@default_options
+def add_iwad(app, config_path, name, path):
+    app.add_iwad(name, path)
+    write_config(app, config_path)
+
+@pyzdl.command("rm-wad")
+@click.argument("name", type=click.STRING)
+@default_options
+def rm_iwad(app, config_path, name):
+    iwad = app.rm_iwad(name)
+    if iwad:
+        write_config(app, config_path)
+
+
 @pyzdl.command("add-profile")
 @click.argument("name", type=click.STRING)
 @click.argument("port", type=click.STRING)
-@click.argument("iwad", type=click.Path(exists=True))
+@click.argument("iwad", type=click.STRING)
 @click.option("--file", "files", type=click.Path(exists=True), multiple=True)
 @default_options
 def add_profile(app, config_path, name, port, iwad, files):
