@@ -146,6 +146,16 @@ class Profile:
             desc += f"\n{file.name}"
         return desc
 
+    def to_zdl_ini(self, fp):
+        config = configparser.ConfigParser()
+        config["zdl.save"] = {
+            "port": self.port.name,
+            "iwad": self.iwad.name,
+        }
+        for i, file in enumerate(self.files or []):
+            config["zdl.save"][f"file{i}"] = file.path
+        config.write(fp)
+
 
 @dataclass
 class LoaderApp:

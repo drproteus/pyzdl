@@ -121,6 +121,14 @@ def rm_profile(app, config_path, name):
         write_config(app, config_path)
 
 
+@profiles.command("to-zdl")
+@click.argument("name", type=click.STRING)
+@default_options
+def zdl_profile(app, config_path, name):
+    profile = app.profiles[name]
+    profile.to_zdl_ini(click.get_text_stream("stdout"))
+
+
 @pyzdl.group("config")
 def config():
     pass
