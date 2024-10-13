@@ -1,5 +1,7 @@
 import click
 import json
+import os
+import subprocess
 from lib.util import write_config, default_options
 from gui import main
 
@@ -123,6 +125,16 @@ def show_config(app, config_path, format_type):
             click.get_text_stream("stdout"),
             indent=2,
         )
+
+
+@config.command("edit")
+@click.argument("editor", required=False)
+@default_options
+def edit_config(app, config_path, editor):
+    if not editor:
+        editor = os.getenv("EDITOR")
+    cmd = [editor, config_path]
+    subprocess.call(cmd)
 
 
 @pyzdl.group("run")
