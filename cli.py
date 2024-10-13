@@ -159,6 +159,7 @@ def run_zdl(app, config_path, path):
 @default_options
 def import_profile(app, config_path, path, name):
     app.import_profile(path, name)
+    write_config(app, config_path)
 
 
 @profiles.command("inspect")
