@@ -3,8 +3,10 @@ import sys
 import subprocess
 import configparser
 import re
+import json
 from dataclasses import dataclass
 from typing import Optional
+from lib.util import is_zdl, is_json
 
 
 class LoaderError(Exception):
@@ -157,6 +159,24 @@ class Profile:
             config["zdl.save"][f"file{i}"] = file.path
         config.write(fp)
 
+    @classmethod
+    def from_file(cls, app, path, name=None):
+        if is_json(path):
+            with open(path, "r") as f:
+                profile_json = json.load(f)
+                if name and not profile_json.get("name"):
+                    profile_json["name"] = name
+            profile_json["port"] = app.source_ports[profile_json["port"]]
+            profile_json["iwad"] = app.iwads[profile_json["iwad"]]
+            profile = cls.from_json(profile_json)
+        elif is_zdl(path):
+            if name is None:
+                raise ValueError("name required for zdl import")
+            profile = app.load_zdl(path, name=name)
+        else:
+            raise ValueError(f"Unknown file format: {path}")
+        return profile
+
 
 @dataclass
 class LoaderApp:
@@ -286,12 +306,12 @@ class LoaderApp:
             profiles={},
         )
 
-    def launch_zdl(self, path):
+    def load_zdl(self, path, name=None) -> Profile:
         config = configparser.ConfigParser()
         config.read(path)
         zdl_config = config["zdl.save"]
         profile = Profile(
-            name=path,
+            name=name or path,
             port=self.source_ports[zdl_config["port"]],
             iwad=self.iwads[zdl_config["iwad"]],
             files=[],
@@ -300,4 +320,12 @@ class LoaderApp:
         for key, path in zdl_config.items():
             if re.match(r"file\d+", key):
                 profile.files.append(Resource(path=path))
+        return profile
+
+    def launch_zdl(self, path):
+        profile = self.load_zdl(path)
         profile.launch()
+
+    def import_profile(self, path, name=None):
+        profile = Profile.from_file(self, path, name=name)
+        self.profiles[profile.name] = profile

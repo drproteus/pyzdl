@@ -1,6 +1,6 @@
 import click
 import json
-from lib.util import setup, write_config, default_options
+from lib.util import write_config, default_options
 from gui import main
 
 
@@ -159,6 +159,14 @@ def run_profile(app, config_path, name):
 @default_options
 def run_zdl(app, config_path, path):
     app.launch_zdl(path)
+
+
+@profiles.command("import")
+@click.argument("path")
+@click.argument("name", required=False)
+@default_options
+def import_profile(app, config_path, path, name):
+    app.import_profile(path, name)
 
 
 pyzdl.add_command(main, "gui")
