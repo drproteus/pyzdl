@@ -6,7 +6,7 @@ import re
 import json
 from dataclasses import dataclass
 from typing import Optional
-from lib.util import is_zdl, is_json
+from lib.util import is_zdl, is_json, is_app
 
 
 class LoaderError(Exception):
@@ -51,14 +51,18 @@ class SourcePort:
     def launch(self, args=None):
         args = args or []
         cmd = [self.executable.path]
-        if sys.platform == "darwin":
+        if sys.platform == "darwin" and is_app(self.executable.path):
             cmd = ["open"] + cmd
             if args:
+                # append --args so the rest of args passed go to executable and not open
                 cmd += ["--args"]
-                cmd += args
-        elif sys.platform == "win32" or sys.platform == "linux":
-            # TODO: verify this later, developing initially on macOS
-            cmd += args
+        if sys.platform == "win32":
+            # TODO: Windows specific behavior.
+            pass
+        if sys.platform == "linux":
+            # TODO: Linux specific behavior.
+            pass
+        cmd += args
         subprocess.call(cmd)
 
     @classmethod

@@ -49,3 +49,11 @@ def is_zdl(path):
     if suffix == ".zdl" or suffix == ".ini":
         return True
     return False
+
+
+def is_app(path):
+    """Check if path is valid macOS application with contents."""
+    p = Path(path)
+    if p.suffix == ".app" and p.is_dir():
+        return True
+    return False
