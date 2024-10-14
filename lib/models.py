@@ -115,6 +115,11 @@ class Profile:
     args: Optional[str]
 
     def launch(self, extra_args=None):
+        self.port.launch(
+            self.get_launch_args(extra_args=extra_args),
+        )
+
+    def get_launch_args(self, extra_args=None):
         args = ["-iwad", self.iwad.path]
         extra_args = extra_args or []
         for file in self.files or []:
@@ -124,9 +129,10 @@ class Profile:
                 raise LoaderError(f"{file.path} should be a file, not a directory!")
             args.append("-file")
             args.append(file.path)
-        args += self.args or ""
+        if self.args:
+            args+= self.args.split(" ")
         args += extra_args
-        self.port.launch(args)
+        return args
 
     @classmethod
     def from_json(cls, d):
