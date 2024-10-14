@@ -1,6 +1,7 @@
 import os
 import io
 import unittest
+import tempfile
 from lib.util import setup
 from lib.models import LoaderApp
 
@@ -36,6 +37,18 @@ class ConfigTests(unittest.TestCase):
         for file in profile.files:
             self.assertIn(f"-file {file.path}", launch_args)
         self.assertIn("-timedemo ./brutal.lmp", launch_args)
+
+    def test_zdl_profile(self):
+        app = self.get_app()
+        profile = app.profiles["Brutal Doom"]
+        with tempfile.NamedTemporaryFile("w") as t:
+            profile.to_zdl_ini(t)
+            t.seek(0)
+            profile2 = app.load_zdl(t.name)
+        self.assertEqual(
+            profile.get_launch_args(),
+            profile2.get_launch_args(),
+        )
 
 
 if __name__ == "__main__":
