@@ -1,4 +1,5 @@
 import wx
+import os
 import click
 from lib.util import default_options
 
@@ -6,58 +7,100 @@ from lib.util import default_options
 class MainFrame(wx.Frame):
     def __init__(self, app):
         super().__init__(parent=None, title="pyZDL")
+        self.app = app
+        self.dirname = "."
+        self.control = wx.TextCtrl(self, style=wx.TE_MULTILINE)
+        self.CreateStatusBar()
+        filemenu = wx.Menu()
+        menu_open = filemenu.Append(wx.ID_OPEN, "&Open", " Open a ZDL")
+        menu_about = filemenu.Append(
+            wx.ID_ABOUT, "&About", " Information about this program"
+        )
+        menu_exit = filemenu.Append(wx.ID_EXIT, "&Exit", " Terminate the program")
 
-        choices = list(app.profiles.keys())
-        profile_list = wx.ListBox(
+        menuBar = wx.MenuBar()
+        menuBar.Append(filemenu, "&File")
+        self.SetMenuBar(menuBar)
+
+        self.choices = list(app.profiles.keys())
+        self.profile_list = wx.ListBox(
             self,
-            choices=choices,
+            choices=self.choices,
             style=wx.LB_SINGLE,
             size=(140, 140),
         )
-        run_button = wx.Button(self, label="Run", pos=(10, 190))
+        self.run_button = wx.Button(self, label="Run", pos=(10, 190))
 
-        profile_list.Selection = 0
-        profile_name = choices[profile_list.Selection]
+        self.profile_list.Selection = 0
+        profile_name = self.choices[self.profile_list.Selection]
         profile = app.profiles.get(profile_name, None)
-        info_box = wx.StaticText(
+
+        self.info_box = wx.StaticText(
             self,
             label=profile.get_description(),
             pos=(140, 2),
             size=(254, 200),
         )
 
-        def on_click(*args, **kwargs):
-            profile_name = choices[profile_list.Selection]
-            profile = app.profiles.get(profile_name, None)
-            if not profile:
-                raise click.ClickException(f"Could not find {profile_name} in config.")
-            click.echo(f"Launching {profile_name}")
-            profile.launch()
-
-        def on_update(*args, **kwargs):
-            profile_name = choices[profile_list.Selection]
-            profile = app.profiles.get(profile_name, None)
-            info_box.Label = profile.get_description()
-            args_box.Value = profile.args
-
-        def on_args_edit(*args, **kwargs):
-            profile_name = choices[profile_list.Selection]
-            profile = app.profiles.get(profile_name, None)
-            profile.args = args_box.Value
-
-        args_box = wx.TextCtrl(
+        self.args_box = wx.TextCtrl(
             self,
             value=profile.args or "",
             pos=(100, 190),
             size=(190, 20),
         )
 
-        run_button.Bind(wx.EVT_LEFT_UP, on_click)
-        profile_list.Bind(wx.EVT_TEXT_ENTER, on_click)
-        profile_list.Bind(wx.EVT_LISTBOX, on_update)
-        profile_list.Bind(wx.EVT_LISTBOX_DCLICK, on_click)
-        args_box.Bind(wx.EVT_TEXT, on_args_edit)
+        self.Bind(wx.EVT_MENU, self.on_about, menu_about)
+        self.Bind(wx.EVT_MENU, self.on_open, menu_open)
+        self.run_button.Bind(wx.EVT_LEFT_UP, self.on_click)
+        self.profile_list.Bind(wx.EVT_TEXT_ENTER, self.on_click)
+        self.profile_list.Bind(wx.EVT_LISTBOX, self.on_update)
+        self.profile_list.Bind(wx.EVT_LISTBOX_DCLICK, self.on_click)
+        self.args_box.Bind(wx.EVT_TEXT, self.on_args_edit)
         self.Show()
+
+    def get_selected_profile(self):
+        profile_name = self.choices[self.profile_list.Selection]
+        profile = self.app.profiles.get(profile_name, None)
+        if not profile:
+            raise click.ClickException(f"Could not find {profile_name} in config.")
+        return profile
+
+    def launch_selected_profile(self):
+        profile = self.get_selected_profile()
+        profile.launch()
+
+    def on_click(self, e):
+        self.launch_selected_profile()
+
+    def on_update(self, e):
+        profile = self.get_selected_profile()
+        self.info_box.Label = profile.get_description()
+        self.args_box.Value = profile.args
+
+    def on_args_edit(self, e):
+        profile = self.get_selected_profile()
+        profile.args = self.args_box.Value
+
+    def on_about(self, e):
+        dialog = wx.MessageDialog(self, "python GZDoom launcher", "About pyZDL", wx.OK)
+        dialog.ShowModal()
+        dialog.Destroy()
+
+    def on_open(self, e):
+        dialog = wx.FileDialog(
+            self,
+            "Choose a file",
+            self.dirname,
+            "",
+            "*.ini;*.zdl",
+            wx.FD_OPEN,
+        )
+        if dialog.ShowModal() == wx.ID_OK:
+            self.filename = dialog.GetFilename()
+            self.dirname = dialog.GetDirectory()
+            profile = self.app.load_zdl(os.path.join(self.dirname, self.filename))
+            profile.launch()
+        dialog.Destroy()
 
 
 @click.command("pyzdl_gui")
