@@ -5,9 +5,10 @@ from lib.util import default_options, setup
 
 
 class MainFrame(wx.Frame):
-    def __init__(self, app):
+    def __init__(self, app, config_path):
         super().__init__(parent=None, title="pyZDL")
         self.app = app
+        self.config_path = config_path
         self.dirname = "."
         self.control = wx.TextCtrl(self, style=wx.TE_MULTILINE)
         self.CreateStatusBar()
@@ -18,6 +19,7 @@ class MainFrame(wx.Frame):
         )
         menu_exit = filemenu.Append(wx.ID_EXIT, "&Exit", " Terminate the program")
         menu_load_config = filemenu.Append(wx.ID_FILE1, "&Load", " Load new config")
+        menu_reload = filemenu.Append(wx.ID_FILE2, "&Reload", " Reload config")
 
         menuBar = wx.MenuBar()
         menuBar.Append(filemenu, "&File")
@@ -53,6 +55,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_about, menu_about)
         self.Bind(wx.EVT_MENU, self.on_open, menu_open)
         self.Bind(wx.EVT_MENU, self.on_load_config, menu_load_config)
+        self.Bind(wx.EVT_MENU, self.on_reload, menu_reload)
         self.run_button.Bind(wx.EVT_LEFT_UP, self.on_click)
         self.profile_list.Bind(wx.EVT_TEXT_ENTER, self.on_click)
         self.profile_list.Bind(wx.EVT_LISTBOX, self.on_update)
@@ -104,6 +107,12 @@ class MainFrame(wx.Frame):
             profile.launch()
         dialog.Destroy()
 
+    def reload(self, config_path):
+        app = setup(config_path)
+        new_frame = MainFrame(app, config_path)
+        new_frame.Show()
+        self.Destroy()
+
     def on_load_config(self, e):
         dialog = wx.FileDialog(
             self,
@@ -115,11 +124,11 @@ class MainFrame(wx.Frame):
         )
         if dialog.ShowModal() == wx.ID_OK:
             config_path = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
-            app = setup(config_path)
-            new_frame = MainFrame(app)
-            new_frame.Show()
-            self.Destroy()
+            self.reload(config_path)
         dialog.Destroy()
+
+    def on_reload(self, e):
+        self.reload(self.config_path)
 
 
 @click.command("pyzdl_gui")
@@ -130,7 +139,7 @@ def main(app, config_path):
     for name, _ in app.profiles.items():
         click.echo(f"* {name}", err=True)
     gui = wx.App()
-    frame = MainFrame(app)
+    frame = MainFrame(app, config_path)
     gui.MainLoop()
 
 
