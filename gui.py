@@ -1,7 +1,7 @@
 import wx
 import os
 import click
-from lib.util import default_options, setup
+from lib.util import default_options, setup, write_config
 
 
 class MainFrame(wx.Frame):
@@ -20,6 +20,7 @@ class MainFrame(wx.Frame):
         menu_exit = filemenu.Append(wx.ID_EXIT, "&Exit", " Terminate the program")
         menu_load_config = filemenu.Append(wx.ID_FILE1, "&Load", " Load new config")
         menu_reload = filemenu.Append(wx.ID_FILE2, "&Reload", " Reload config")
+        menu_save = filemenu.Append(wx.ID_FILE3, "&Save", " Save profile args to config")
 
         menuBar = wx.MenuBar()
         menuBar.Append(filemenu, "&File")
@@ -56,6 +57,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_open, menu_open)
         self.Bind(wx.EVT_MENU, self.on_load_config, menu_load_config)
         self.Bind(wx.EVT_MENU, self.on_reload, menu_reload)
+        self.Bind(wx.EVT_MENU, self.on_save_config, menu_save)
         self.run_button.Bind(wx.EVT_LEFT_UP, self.on_click)
         self.profile_list.Bind(wx.EVT_TEXT_ENTER, self.on_click)
         self.profile_list.Bind(wx.EVT_LISTBOX, self.on_update)
@@ -129,6 +131,9 @@ class MainFrame(wx.Frame):
 
     def on_reload(self, e):
         self.reload(self.config_path)
+
+    def on_save_config(self, e):
+        write_config(self.app, self.config_path)
 
 
 @click.command("pyzdl_gui")
