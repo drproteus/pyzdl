@@ -1,5 +1,5 @@
 dist/gui.app:
-	python setup.py py2app
+	python setup.py py2app --iconfile assets/doom-cacodemon.png
 
 macos: dist/gui.app
 
