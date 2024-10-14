@@ -288,7 +288,7 @@ class LoaderApp:
         def get_config_indexes(section, prefix):
             indexes = []
             for key in section.keys():
-                search = re.search(r"{prefix}(\d+)n", key)
+                search = re.search(prefix + r"(\d+)n", key)
                 if search:
                     indexes.append(int(search.group(1)))
             return indexes
