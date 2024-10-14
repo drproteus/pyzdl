@@ -6,3 +6,7 @@ macos: dist/gui.app
 .PHONY: clean
 clean:
 	rm -rf dist/*
+
+.PHONY: test
+test:
+	python -m unittest

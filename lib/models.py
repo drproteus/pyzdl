@@ -130,7 +130,7 @@ class Profile:
             args.append("-file")
             args.append(file.path)
         if self.args:
-            args+= self.args.split(" ")
+            args += self.args.split(" ")
         args += extra_args
         return args
 
