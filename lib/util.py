@@ -1,9 +1,13 @@
 import json
 import click
+import os
 from pathlib import Path
 
 
-CONFIG_PATH = Path.home().joinpath(".config", "pyzdl", "config.json")
+PYZDL_ROOT = os.getenv("PYZDL_ROOT", Path.home().joinpath(".config", "pyzdl"))
+CONFIG_PATH = os.getenv("PYZDL_CONFIG_PATH", os.path.join(PYZDL_ROOT, "config.json"))
+SAVEDIR_PATH = os.getenv("PYZDL_SAVEDIR_PATH", os.path.join(PYZDL_ROOT, "saves"))
+PROFILE_SAVES = True  # TODO: Add to config.json
 
 
 def setup(config_path):

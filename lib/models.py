@@ -6,7 +6,7 @@ import re
 import json
 from dataclasses import dataclass
 from typing import Optional
-from lib.util import is_zdl, is_json, is_app, expand_args
+from lib.util import is_zdl, is_json, is_app, expand_args, PROFILE_SAVES, SAVEDIR_PATH
 
 
 class LoaderError(Exception):
@@ -132,6 +132,8 @@ class Profile:
         if self.args:
             args += self.args.split(" ")
         args += extra_args
+        if PROFILE_SAVES and "-savedir" not in args:
+            args += ["-savedir", os.path.join(SAVEDIR_PATH, self.name)]
         return args
 
     @classmethod
