@@ -150,6 +150,7 @@ class Profile:
             "port": self.port.to_json(),
             "iwad": self.iwad.to_json(),
             "files": [f.to_json() for f in self.files or []],
+            "args": self.args or "",
         }
 
     def get_description(self):
