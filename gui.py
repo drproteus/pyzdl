@@ -1,7 +1,7 @@
 import wx
 import os
 import click
-from lib.util import default_options
+from lib.util import default_options, setup
 
 
 class MainFrame(wx.Frame):
@@ -17,6 +17,7 @@ class MainFrame(wx.Frame):
             wx.ID_ABOUT, "&About", " Information about this program"
         )
         menu_exit = filemenu.Append(wx.ID_EXIT, "&Exit", " Terminate the program")
+        menu_load_config = filemenu.Append(wx.ID_FILE1, "&Load", " Load new config")
 
         menuBar = wx.MenuBar()
         menuBar.Append(filemenu, "&File")
@@ -51,6 +52,7 @@ class MainFrame(wx.Frame):
 
         self.Bind(wx.EVT_MENU, self.on_about, menu_about)
         self.Bind(wx.EVT_MENU, self.on_open, menu_open)
+        self.Bind(wx.EVT_MENU, self.on_load_config, menu_load_config)
         self.run_button.Bind(wx.EVT_LEFT_UP, self.on_click)
         self.profile_list.Bind(wx.EVT_TEXT_ENTER, self.on_click)
         self.profile_list.Bind(wx.EVT_LISTBOX, self.on_update)
@@ -100,6 +102,23 @@ class MainFrame(wx.Frame):
             self.dirname = dialog.GetDirectory()
             profile = self.app.load_zdl(os.path.join(self.dirname, self.filename))
             profile.launch()
+        dialog.Destroy()
+
+    def on_load_config(self, e):
+        dialog = wx.FileDialog(
+            self,
+            "Choose a config file",
+            self.dirname,
+            "",
+            "*.json;*.ini;*.zdl",
+            wx.FD_OPEN,
+        )
+        if dialog.ShowModal() == wx.ID_OK:
+            config_path = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
+            app = setup(config_path)
+            new_frame = MainFrame(app)
+            new_frame.Show()
+            self.Destroy()
         dialog.Destroy()
 
 
