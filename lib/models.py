@@ -6,7 +6,7 @@ import re
 import json
 from dataclasses import dataclass
 from typing import Optional
-from lib.util import is_zdl, is_json, is_app
+from lib.util import is_zdl, is_json, is_app, expand_args
 
 
 class LoaderError(Exception):
@@ -62,7 +62,7 @@ class SourcePort:
         if sys.platform == "linux":
             # TODO: Linux specific behavior.
             pass
-        cmd += args
+        cmd += expand_args(args)
         subprocess.call(cmd)
 
     @classmethod

@@ -57,3 +57,10 @@ def is_app(path):
     if p.suffix == ".app" and p.is_dir():
         return True
     return False
+
+
+def expand_args(args):
+    return [
+        str(Path(arg).expanduser()) if arg.startswith("~")
+        else arg for arg in args
+    ]
