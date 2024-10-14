@@ -38,16 +38,16 @@ class MainFrame(wx.Frame):
             profile_name = choices[profile_list.Selection]
             profile = app.profiles.get(profile_name, None)
             info_box.Label = profile.get_description()
-            args_box.Value = " ".join(profile.args or [])
+            args_box.Value = profile.args
 
         def on_args_edit(*args, **kwargs):
             profile_name = choices[profile_list.Selection]
             profile = app.profiles.get(profile_name, None)
-            profile.args = args_box.Value.split(" ")
+            profile.args = args_box.Value
 
         args_box = wx.TextCtrl(
             self,
-            value=" ".join(profile.args or []),
+            value=profile.args or "",
             pos=(100, 190),
             size=(190, 20),
         )
