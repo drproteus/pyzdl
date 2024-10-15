@@ -64,6 +64,7 @@ class AddIwadDialog(BaseAddNamedResourceDialog):
             iwad=Resource(path=self.add_named_resource_file_path.Value),
         )
         self.app.iwads[iwad.name] = iwad
+        write_config(self.app, self.parent.config_path)
         self.parent.refresh()
         self.Destroy()
 
@@ -84,6 +85,7 @@ class AddSourcePortDialog(BaseAddNamedResourceDialog):
             executable=Resource(path=self.add_named_resource_file_path.Value),
         )
         self.app.source_ports[port.name] = port
+        write_config(self.app, self.parent.config_path)
         self.parent.refresh()
         self.Destroy()
 
@@ -149,6 +151,7 @@ class AddProfileDialog(AddProfileDialogWindow):
             args=self.add_profile_args_box.Value,
         )
         self.app.profiles[profile.name] = profile
+        write_config(self.app, self.parent.config_path)
         self.parent.refresh()
         self.Destroy()
 
@@ -381,6 +384,7 @@ class MainFrame(MainWindow):
     def remove_profile(self, e):
         selected_profile_name = self.profiles_list_box.GetStringSelection()
         del self.app.profiles[selected_profile_name]
+        write_config(self.app, self.config_path)
         self.refresh()
 
     def update_settings_profile_saves(self, e):
@@ -399,6 +403,7 @@ class MainFrame(MainWindow):
         if selected_port_name not in self.app.source_ports:
             return
         del self.app.source_ports[selected_port_name]
+        write_config(self.app, self.config_path)
         self.refresh()
 
     def on_iwad_remove(self, e):
