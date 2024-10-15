@@ -1,6 +1,6 @@
 python GZDoom launcher
 
-<img width="786" alt="Screenshot 2024-10-14 at 8 46 10 PM" src="https://github.com/user-attachments/assets/8ed75087-3704-4fd2-825f-7f6227d709a7">
+<img width="722" alt="image" src="https://github.com/user-attachments/assets/aac59e3f-c16a-436e-bb94-050bea9594da">
 
 ```
 Usage: cli.py [OPTIONS] COMMAND [ARGS]...
