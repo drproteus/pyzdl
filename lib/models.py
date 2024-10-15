@@ -202,9 +202,7 @@ class AppSettings:
         return cls(profile_saves=d.get("profile_saves", False))
 
     def to_json(self):
-        return {
-            "profile_saves": self.profile_saves
-        }
+        return {"profile_saves": self.profile_saves}
 
 
 @dataclass
@@ -235,7 +233,7 @@ class LoaderApp:
             source_ports=source_ports,
             iwads=iwads,
             profiles=profiles,
-            settings=AppSettings.from_json(d.get("settings"))
+            settings=AppSettings.from_json(d.get("settings")),
         )
 
     def to_json(self):

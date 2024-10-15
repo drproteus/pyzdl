@@ -2,8 +2,77 @@ import wx
 import os
 import click
 from lib.util import default_options, setup, write_config
-from lib.models import Profile, Resource
-from wxglade.wxglade_out import MainWindow, AddProfileDialogWindow
+from lib.models import Profile, Resource, Iwad, SourcePort
+from wxglade.wxglade_out import (
+    MainWindow,
+    AddProfileDialogWindow,
+    AddNamedResourceDialogWindow,
+)
+
+
+class BaseAddNamedResourceDialog(AddNamedResourceDialogWindow):
+    def __init__(self, parent):
+        super().__init__(parent=parent)
+        self.dirname = "."
+        self.parent = parent
+        self.app = parent.app
+        self.add_named_resource_open_button.Bind(wx.EVT_LEFT_UP, self.on_file_add)
+        self.add_named_resource_confirm_button.Bind(wx.EVT_LEFT_UP, self.on_confirm)
+        self.cancel_add_named_resource_button.Bind(wx.EVT_LEFT_UP, self.on_cancel)
+
+    def get_wildcard(self):
+        return "*"
+
+    def on_file_add(self, e):
+        dialog = wx.FileDialog(
+            self, "Choose a source port", self.dirname, "", self.get_wildcard(), wx.FD_OPEN
+        )
+        if dialog.ShowModal() == wx.ID_OK:
+            path = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
+            self.add_named_resource_file_path.Value = path
+        dialog.Destroy()
+
+    def on_confirm(self, e):
+        raise NotImplementedError
+
+    def on_cancel(self, e):
+        self.Destroy()
+
+
+class AddIwadDialog(BaseAddNamedResourceDialog):
+
+    def get_wildcard(self):
+        return "*.wad;*.iwad;*.pk3"
+
+    def on_confirm(self, e):
+        if (
+            not self.add_named_resource_name.Value
+            or not self.add_named_resource_file_path.Value
+        ):
+            return
+        iwad = Iwad(
+            name=self.add_named_resource_name.Value,
+            iwad=Resource(path=self.add_named_resource_file_path.Value),
+        )
+        self.app.iwads[iwad.name] = iwad
+        self.parent.refresh()
+        self.Destroy()
+
+
+class AddSourcePortDialog(BaseAddNamedResourceDialog):
+    def on_confirm(self, e):
+        if (
+            not self.add_named_resource_name.Value
+            or not self.add_named_resource_file_path.Value
+        ):
+            return
+        port = SourcePort(
+            name=self.add_named_resource_name.Value,
+            executable=Resource(path=self.add_named_resource_file_path.Value),
+        )
+        self.app.source_ports[port.name] = port
+        self.parent.refresh()
+        self.Destroy()
 
 
 class AddProfileDialog(AddProfileDialogWindow):
@@ -165,7 +234,9 @@ class MainFrame(MainWindow):
             self.source_ports_list_box.Append(port_name)
 
         self.profile_saves_checkbox.SetValue(self.app.settings.profile_saves)
-        self.profile_saves_checkbox.Bind(wx.EVT_CHECKBOX, self.update_settings_profile_saves)
+        self.profile_saves_checkbox.Bind(
+            wx.EVT_CHECKBOX, self.update_settings_profile_saves
+        )
 
         self.launch_button.Bind(wx.EVT_LEFT_UP, self.on_click)
         self.profiles_list_box.Bind(wx.EVT_TEXT_ENTER, self.on_click)
@@ -175,6 +246,10 @@ class MainFrame(MainWindow):
         self.add_profile_button.Bind(wx.EVT_LEFT_UP, self.show_add_profile_dialog)
         self.edit_profile_button.Bind(wx.EVT_LEFT_UP, self.show_edit_profile_dialog)
         self.remove_profile_button.Bind(wx.EVT_LEFT_UP, self.remove_profile)
+        self.add_iwad_button.Bind(wx.EVT_LEFT_UP, self.on_iwad_add)
+        self.add_source_port_button.Bind(wx.EVT_LEFT_UP, self.on_source_port_add)
+        self.remove_iwad_button.Bind(wx.EVT_LEFT_UP, self.on_iwad_remove)
+        self.remove_source_port_button.Bind(wx.EVT_LEFT_UP, self.on_source_port_remove)
 
         self.profiles_list_box.Selection = 0
         self.on_update(None)
@@ -243,13 +318,17 @@ class MainFrame(MainWindow):
         dialog.Destroy()
 
     def refresh(self):
+        current_tab = self.tabs.GetSelection()
         new_frame = MainFrame(self.app, self.config_path)
+        new_frame.tabs.SetSelection(current_tab)
         new_frame.Show()
         self.Destroy()
 
     def reload(self, config_path):
+        current_tab = self.tabs.GetSelection()
         app = setup(config_path)
         new_frame = MainFrame(app, config_path)
+        new_frame.tabs.SetSelection(current_tab)
         new_frame.Show()
         self.Destroy()
 
@@ -290,6 +369,28 @@ class MainFrame(MainWindow):
 
     def update_settings_profile_saves(self, e):
         self.app.settings.profile_saves = self.profile_saves_checkbox.GetValue()
+
+    def on_source_port_add(self, e):
+        dialog = AddSourcePortDialog(self)
+        dialog.Show()
+
+    def on_iwad_add(self, e):
+        dialog = AddIwadDialog(self)
+        dialog.Show()
+
+    def on_source_port_remove(self, e):
+        selected_port_name = self.source_ports_list_box.GetStringSelection()
+        if selected_port_name not in self.app.source_ports:
+            return
+        del self.app.source_ports[selected_port_name]
+        self.refresh()
+
+    def on_iwad_remove(self, e):
+        selected_iwad_name = self.iwads_list_box.GetStringSelection()
+        if selected_iwad_name not in self.app.iwads:
+            return
+        del self.app.iwads[selected_iwad_name]
+        self.refresh()
 
 
 @click.command("pyzdl_gui")
