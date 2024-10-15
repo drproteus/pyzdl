@@ -1,7 +1,7 @@
-dist/gui.app:
+dist/pyZDL.app:
 	python setup.py py2app --iconfile assets/doom-cacodemon.png
 
-macos: dist/gui.app
+macos: dist/pyZDL.app
 
 .PHONY: clean
 clean:
