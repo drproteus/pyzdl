@@ -6,7 +6,8 @@ import re
 import json
 from dataclasses import dataclass
 from typing import Optional
-from lib.util import is_zdl, is_json, is_app, expand_args, SAVEDIR_PATH
+from lib.util import is_zdl, is_json, is_app, expand_args
+from lib.config import AppSettings
 
 
 class LoaderError(Exception):
@@ -192,20 +193,6 @@ class Profile:
 
 
 @dataclass
-class AppSettings:
-    profile_saves: bool = False
-
-    @classmethod
-    def from_json(cls, d):
-        if not d:
-            return cls()
-        return cls(profile_saves=d.get("profile_saves", False))
-
-    def to_json(self):
-        return {"profile_saves": self.profile_saves}
-
-
-@dataclass
 class LoaderApp:
     source_ports: dict[str, SourcePort]
     iwads: dict[str, Iwad]
@@ -366,5 +353,5 @@ class LoaderApp:
         profile = self.profiles[name]
         launch_args = profile.get_launch_args(extra_args=extra_args)
         if self.settings.profile_saves and "-savedir" not in launch_args:
-            launch_args += ["-savedir", os.path.join(SAVEDIR_PATH, profile.name)]
+            launch_args += ["-savedir", os.path.join(self.settings.savedir_path, profile.name)]
         profile.port.launch(args=launch_args)
