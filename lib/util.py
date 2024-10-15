@@ -2,11 +2,24 @@ import json
 import click
 import os
 from pathlib import Path
-from lib.config import CONFIG_PATH
+from lib.config import PYZDL_ROOT, CONFIG_PATH
+
+
+def init_default_config():
+    return {
+        "source_ports": {},
+        "iwads": {},
+        "profiles": {},
+        "settings": {"profile_saves": True, "vars": {}},
+    }
 
 
 def setup(config_path):
     from lib.models import LoaderApp
+
+    if not os.path.exists(CONFIG_PATH):
+        init_config = init_default_config()
+        return LoaderApp(**init_config)
 
     if is_json(config_path):
         with open(config_path, "r") as f:
@@ -19,6 +32,7 @@ def setup(config_path):
 
 
 def write_config(app, config_path):
+    os.makedirs(PYZDL_ROOT, exist_ok=True)
     with open(config_path, "w") as f:
         json.dump(app.to_json(), f, indent=2)
 
@@ -28,7 +42,7 @@ def default_options(fn):
         "--config",
         "config_path",
         default=CONFIG_PATH,
-        type=click.Path(exists=True),
+        type=click.Path(exists=False),
     )
     def wrapped(config_path, *args, **kwargs):
         app = setup(config_path)
