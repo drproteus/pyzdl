@@ -1,3 +1,18 @@
 python GZDoom launcher
 
-<img width="512" alt="image" src="https://github.com/user-attachments/assets/d8364ac4-00b0-4881-a466-c0cfb0645eff">
+<img width="786" alt="Screenshot 2024-10-14 at 8 46 10 PM" src="https://github.com/user-attachments/assets/8ed75087-3704-4fd2-825f-7f6227d709a7">
+
+```
+Usage: cli.py [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  config
+  gui
+  iwads
+  ports
+  profiles
+  run
+```
