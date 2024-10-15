@@ -156,7 +156,7 @@ def run_profile(app, config_path, name, extra_args):
         profile = app.profiles[name]
     except KeyError:
         raise click.ClickException(f"Could not find profile {name} in config.")
-    profile.launch(extra_args=extra_args)
+    profile.port.launch(profile.name, extra_args=extra_args)
 
 
 @run.command("zdl", context_settings={"ignore_unknown_options": True})

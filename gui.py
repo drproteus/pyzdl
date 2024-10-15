@@ -190,7 +190,7 @@ class MainFrame(MainWindow):
 
     def launch_selected_profile(self):
         profile = self.get_selected_profile()
-        profile.launch()
+        self.app.launch_profile(profile.name)
 
     def on_click(self, e):
         self.launch_selected_profile()
