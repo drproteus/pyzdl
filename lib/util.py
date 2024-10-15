@@ -73,4 +73,6 @@ def is_app(path):
 
 
 def expand_args(args):
-    return [str(Path(arg).expanduser()) if arg.startswith("~") else arg for arg in args]
+    return [
+        os.path.expanduser(os.path.expandvars(arg)) for arg in args
+    ]
