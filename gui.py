@@ -114,6 +114,7 @@ class AddProfileDialog(AddProfileDialogWindow):
         self.add_profile_files_list_box.Clear()
         if self.profile:
             self.SetTitle("Edit Profile")
+            self.add_profile_args_box.Value = self.profile.args
         if self.profile and self.profile.files:
             for file in self.profile.files:
                 self.add_profile_files_list_box.Append(file.path)
