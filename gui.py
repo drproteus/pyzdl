@@ -201,11 +201,12 @@ class AddProfileDialog(AddProfileDialogWindow):
             self.dirname,
             "",
             "*.wad;*.pk3",
-            wx.FD_OPEN,
+            wx.FD_OPEN | wx.FD_MULTIPLE,
         )
         if dialog.ShowModal() == wx.ID_OK:
-            path = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
-            self.filenames.append(path)
+            self.dirname = dialog.GetDirectory()
+            for filename in dialog.GetFilenames():
+                self.filenames.append(os.path.join(self.dirname, filename))
             self.refresh_files()
         dialog.Destroy()
 
