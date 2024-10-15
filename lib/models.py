@@ -194,10 +194,27 @@ class Profile:
 
 
 @dataclass
+class AppSettings:
+    profile_saves: bool = False
+
+    @classmethod
+    def from_json(cls, d):
+        if not d:
+            return cls()
+        return cls(profile_saves=d.get("profile_saves", False))
+
+    def to_json(self):
+        return {
+            "profile_saves": self.profile_saves
+        }
+
+
+@dataclass
 class LoaderApp:
     source_ports: dict[str, SourcePort]
     iwads: dict[str, Iwad]
     profiles: dict[str, Profile]
+    settings: AppSettings
 
     @classmethod
     def from_json(cls, d):
@@ -220,6 +237,7 @@ class LoaderApp:
             source_ports=source_ports,
             iwads=iwads,
             profiles=profiles,
+            settings=AppSettings.from_json(d.get("settings"))
         )
 
     def to_json(self):
@@ -235,6 +253,7 @@ class LoaderApp:
             ],
             "iwads": [iwad.to_json() for name, iwad in self.iwads.items()],
             "profiles": profiles_json,
+            "settings": self.settings.to_json(),
         }
 
     def get_profile(self, name):
@@ -319,6 +338,7 @@ class LoaderApp:
             source_ports=source_ports,
             iwads=iwads,
             profiles={},
+            settings=AppSettings(),
         )
 
     def load_zdl(self, path, name=None) -> Profile:

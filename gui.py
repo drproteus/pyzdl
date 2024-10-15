@@ -164,6 +164,9 @@ class MainFrame(MainWindow):
         for port_name, port in self.app.source_ports.items():
             self.source_ports_list_box.Append(port_name)
 
+        self.profile_saves_checkbox.SetValue(self.app.settings.profile_saves)
+        self.profile_saves_checkbox.Bind(wx.EVT_CHECKBOX, self.update_settings_profile_saves)
+
         self.launch_button.Bind(wx.EVT_LEFT_UP, self.on_click)
         self.profiles_list_box.Bind(wx.EVT_TEXT_ENTER, self.on_click)
         self.profiles_list_box.Bind(wx.EVT_LISTBOX, self.on_update)
@@ -284,6 +287,9 @@ class MainFrame(MainWindow):
         selected_profile_name = self.profiles_list_box.GetStringSelection()
         del self.app.profiles[selected_profile_name]
         self.refresh()
+
+    def update_settings_profile_saves(self, e):
+        self.app.settings.profile_saves = self.profile_saves_checkbox.GetValue()
 
 
 @click.command("pyzdl_gui")
