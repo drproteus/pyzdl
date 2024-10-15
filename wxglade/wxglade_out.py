@@ -19,7 +19,6 @@ class MainWindow(wx.Frame):
         kwds["style"] = kwds.get("style", 0) | wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.SetSize((674, 718))
-        self.SetTitle("frame")
 
         self.panel_1 = wx.Panel(self, wx.ID_ANY)
 
@@ -61,9 +60,9 @@ class MainWindow(wx.Frame):
 
         sizer_7 = wx.GridBagSizer(0, 0)
 
-        profile_name = wx.StaticText(self.window_1_pane_2, wx.ID_ANY, "Brutal Doom")
-        profile_name.SetFont(wx.Font(18, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, 0, ".SF NS"))
-        sizer_7.Add(profile_name, (0, 0), (1, 1), wx.ALIGN_CENTER, 0)
+        self.profile_name = wx.StaticText(self.window_1_pane_2, wx.ID_ANY, "Brutal Doom")
+        self.profile_name.SetFont(wx.Font(18, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL, 0, ".SF NS"))
+        sizer_7.Add(self.profile_name, (0, 0), (1, 1), wx.ALIGN_CENTER, 0)
 
         self.profile_tree_view = wx.TreeCtrl(self.window_1_pane_2, wx.ID_ANY)
         sizer_7.Add(self.profile_tree_view, (1, 0), (1, 1), wx.EXPAND, 0)

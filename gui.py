@@ -2,15 +2,16 @@ import wx
 import os
 import click
 from lib.util import default_options, setup, write_config
+from wxglade.wxglade_out import MainWindow
 
 
-class MainFrame(wx.Frame):
+class MainFrame(MainWindow):
     def __init__(self, app, config_path):
         super().__init__(parent=None, title="pyZDL")
         self.app = app
+        self.choices = list(app.profiles.keys())
         self.config_path = config_path
         self.dirname = "."
-        self.control = wx.TextCtrl(self, style=wx.TE_MULTILINE)
         self.CreateStatusBar()
         filemenu = wx.Menu()
         menu_open = filemenu.Append(wx.ID_OPEN, "&Open", " Open a ZDL")
@@ -26,47 +27,37 @@ class MainFrame(wx.Frame):
         menuBar.Append(filemenu, "&File")
         self.SetMenuBar(menuBar)
 
-        self.choices = list(app.profiles.keys())
-        self.profile_list = wx.ListBox(
-            self,
-            choices=self.choices,
-            style=wx.LB_SINGLE,
-            size=(140, 140),
-        )
-        self.run_button = wx.Button(self, label="Run", pos=(10, 190))
-
-        self.profile_list.Selection = 0
-        profile_name = self.choices[self.profile_list.Selection]
-        profile = app.profiles.get(profile_name, None)
-
-        self.info_box = wx.StaticText(
-            self,
-            label=profile.get_description(),
-            pos=(140, 2),
-            size=(254, 200),
-        )
-
-        self.args_box = wx.TextCtrl(
-            self,
-            value=profile.args or "",
-            pos=(100, 190),
-            size=(190, 20),
-        )
-
         self.Bind(wx.EVT_MENU, self.on_about, menu_about)
         self.Bind(wx.EVT_MENU, self.on_open, menu_open)
         self.Bind(wx.EVT_MENU, self.on_load_config, menu_load_config)
         self.Bind(wx.EVT_MENU, self.on_reload, menu_reload)
         self.Bind(wx.EVT_MENU, self.on_save_config, menu_save)
-        self.run_button.Bind(wx.EVT_LEFT_UP, self.on_click)
-        self.profile_list.Bind(wx.EVT_TEXT_ENTER, self.on_click)
-        self.profile_list.Bind(wx.EVT_LISTBOX, self.on_update)
-        self.profile_list.Bind(wx.EVT_LISTBOX_DCLICK, self.on_click)
+
+        self.profiles_list_box.Clear()
+        for profile_name, profile in self.app.profiles.items():
+            self.profiles_list_box.Append(profile_name)
+
+        self.iwads_list_box.Clear()
+        for iwad_name, iwad in self.app.iwads.items():
+            self.iwads_list_box.Append(iwad_name)
+
+        self.source_ports_list_box.Clear()
+        for port_name, port in self.app.source_ports.items():
+            self.source_ports_list_box.Append(port_name)
+
+        self.launch_button.Bind(wx.EVT_LEFT_UP, self.on_click)
+        self.profiles_list_box.Bind(wx.EVT_TEXT_ENTER, self.on_click)
+        self.profiles_list_box.Bind(wx.EVT_LISTBOX, self.on_update)
+        self.profiles_list_box.Bind(wx.EVT_LISTBOX_DCLICK, self.on_click)
         self.args_box.Bind(wx.EVT_TEXT, self.on_args_edit)
+
+        self.profiles_list_box.Selection = 0
+        self.on_update(None)
+
         self.Show()
 
     def get_selected_profile(self):
-        profile_name = self.choices[self.profile_list.Selection]
+        profile_name = self.choices[self.profiles_list_box.Selection]
         profile = self.app.profiles.get(profile_name, None)
         if not profile:
             raise click.ClickException(f"Could not find {profile_name} in config.")
@@ -81,12 +72,29 @@ class MainFrame(wx.Frame):
 
     def on_update(self, e):
         profile = self.get_selected_profile()
-        self.info_box.Label = profile.get_description()
+        self.profile_name.Label = profile.name
         self.args_box.Value = profile.args
+        self.update_profile_tree_view()
 
     def on_args_edit(self, e):
         profile = self.get_selected_profile()
         profile.args = self.args_box.Value
+        self.update_profile_tree_view()
+
+    def update_profile_tree_view(self):
+        profile = self.get_selected_profile()
+        self.profile_tree_view.DeleteAllItems()
+        root = self.profile_tree_view.AddRoot(profile.port.name)
+        iwad = self.profile_tree_view.AppendItem(root, "IWAD")
+        self.profile_tree_view.AppendItem(iwad, profile.iwad.name)
+        files = self.profile_tree_view.AppendItem(root, "Files")
+        for file in profile.files:
+            self.profile_tree_view.AppendItem(files, file.name)
+        if profile.args:
+            args = self.profile_tree_view.AppendItem(root, "Extra")
+            for arg in profile.args.split(" "):
+                self.profile_tree_view.AppendItem(args, arg)
+        self.profile_tree_view.ExpandAll()
 
     def on_about(self, e):
         dialog = wx.MessageDialog(self, "python GZDoom launcher", "About pyZDL", wx.OK)

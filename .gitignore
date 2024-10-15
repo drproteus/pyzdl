@@ -160,4 +160,4 @@ cython_debug/
 #.idea/
 
 wxglade/*.wxg~
-wxglade/wxglade_out.py
+wxglade/#~wxg*
