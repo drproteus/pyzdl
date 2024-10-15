@@ -161,3 +161,4 @@ cython_debug/
 
 wxglade/*.wxg~
 wxglade/#~wxg*
+wxglade/*.py~
