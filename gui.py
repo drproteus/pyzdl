@@ -200,7 +200,7 @@ class AddProfileDialog(AddProfileDialogWindow):
             "Choose a file",
             self.dirname,
             "",
-            "*.wad;*.pk3",
+            "*.wad;*.iwad;*.pk3;*.pk3",
             wx.FD_OPEN | wx.FD_MULTIPLE,
         )
         if dialog.ShowModal() == wx.ID_OK:
