@@ -49,7 +49,7 @@ class SourcePort:
         # TODO: Validate executable or macOS app is GZDoom source port.
         return self.executable.exists()
 
-    def launch(self, args=None):
+    def launch(self, args=None, env=None):
         args = args or []
         cmd = [self.executable.path]
         if sys.platform == "darwin" and is_app(self.executable.path):
@@ -64,7 +64,7 @@ class SourcePort:
             # TODO: Linux specific behavior.
             pass
         cmd += expand_args(args)
-        subprocess.call(cmd)
+        subprocess.call(cmd, env=env)
 
     @classmethod
     def from_json(cls, d):
@@ -353,5 +353,8 @@ class LoaderApp:
         profile = self.profiles[name]
         launch_args = profile.get_launch_args(extra_args=extra_args)
         if self.settings.profile_saves and "-savedir" not in launch_args:
-            launch_args += ["-savedir", os.path.join(self.settings.savedir_path, profile.name)]
-        profile.port.launch(args=launch_args)
+            launch_args += [
+                "-savedir",
+                os.path.join(self.settings.savedir_path, profile.name),
+            ]
+        profile.port.launch(args=launch_args, env=self.settings.get_env())

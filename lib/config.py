@@ -11,6 +11,9 @@ CONFIG_PATH = os.getenv("PYZDL_CONFIG_PATH", os.path.join(PYZDL_ROOT, "config.js
 class AppSettings:
     profile_saves: bool = False
     savedir_path_override: Optional[str] = None
+    # Source port environment variables
+    doomwaddir_override: Optional[str] = None
+    doomwadpath_override: Optional[list[str]] = None
 
     @property
     def config_path(self):
@@ -26,6 +29,26 @@ class AppSettings:
             "PYZDL_SAVEDIR_PATH", os.path.join(self.pyzdl_root, "saves")
         )
 
+    @property
+    def doomwaddir(self):
+        return self.doomwaddir_override or os.getenv("DOOMWADDIR", self.pyzdl_root)
+
+    @property
+    def doomwadpath(self) -> Optional[list[str]]:
+        if self.doomwadpath_override:
+            return self.doomwadpath_override
+        env_var = os.getenv("DOOMWADPATH")
+        if env_var:
+            return env_var.split(";")
+
+    def get_env(self):
+        env = {}
+        if self.doomwaddir:
+            env["DOOMWADDIR"] = self.doomwaddir
+        if self.doomwadpath:
+            env["DOOMWADPATH"] = ";".join(self.doomwadpath)
+        return env
+
     @classmethod
     def from_json(cls, d):
         if not d:
@@ -33,6 +56,8 @@ class AppSettings:
         return cls(
             profile_saves=d.get("profile_saves", False),
             savedir_path_override=d.get("savedir_path"),
+            doomwaddir_override=d.get("vars", {}).get("doomwaddir"),
+            doomwadpath_override=d.get("vars", {}).get("doomwadpath"),
         )
 
     def to_json(self):
@@ -41,4 +66,8 @@ class AppSettings:
             "config_path": self.config_path,
             "profile_saves": self.profile_saves,
             "savedir_path": self.savedir_path,
+            "vars": {
+                "doomwaddir": self.doomwaddir,
+                "doomwadpath": self.doomwadpath,
+            },
         }
