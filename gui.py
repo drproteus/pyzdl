@@ -50,7 +50,7 @@ class AddIwadDialog(BaseAddNamedResourceDialog):
         self.SetTitle("Add IWAD")
 
     def get_wildcard(self):
-        return "*.wad;*.iwad;*.pk3"
+        return "*.wad;*.iwad;*.pk3;*.ipk3"
 
     def on_confirm(self, e):
         if (
