@@ -25,7 +25,12 @@ class BaseAddNamedResourceDialog(AddNamedResourceDialogWindow):
 
     def on_file_add(self, e):
         dialog = wx.FileDialog(
-            self, "Choose a source port", self.dirname, "", self.get_wildcard(), wx.FD_OPEN
+            self,
+            "Choose a source port",
+            self.dirname,
+            "",
+            self.get_wildcard(),
+            wx.FD_OPEN,
         )
         if dialog.ShowModal() == wx.ID_OK:
             path = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
@@ -40,6 +45,9 @@ class BaseAddNamedResourceDialog(AddNamedResourceDialogWindow):
 
 
 class AddIwadDialog(BaseAddNamedResourceDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.SetTitle("Add IWAD")
 
     def get_wildcard(self):
         return "*.wad;*.iwad;*.pk3"
@@ -60,6 +68,10 @@ class AddIwadDialog(BaseAddNamedResourceDialog):
 
 
 class AddSourcePortDialog(BaseAddNamedResourceDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.SetTitle("Add Source Port")
+
     def on_confirm(self, e):
         if (
             not self.add_named_resource_name.Value
@@ -100,6 +112,8 @@ class AddProfileDialog(AddProfileDialogWindow):
                 self.add_profile_source_port_choice_list.SetSelection(i)
         self.filenames = []
         self.add_profile_files_list_box.Clear()
+        if self.profile:
+            self.SetTitle("Edit Profile")
         if self.profile and self.profile.files:
             for file in self.profile.files:
                 self.add_profile_files_list_box.Append(file.path)
