@@ -13,7 +13,7 @@ from wxglade.wxglade_out import (
 class BaseAddNamedResourceDialog(AddNamedResourceDialogWindow):
     def __init__(self, parent):
         super().__init__(parent=parent)
-        self.dirname = "."
+        self.dirname = parent.app.settings.pyzdl_root
         self.parent = parent
         self.app = parent.app
         self.add_named_resource_open_button.Bind(wx.EVT_LEFT_UP, self.on_file_add)
@@ -47,6 +47,7 @@ class BaseAddNamedResourceDialog(AddNamedResourceDialogWindow):
 class AddIwadDialog(BaseAddNamedResourceDialog):
     def __init__(self, parent):
         super().__init__(parent)
+        self.dirname = self.parent.app.settings.doomwaddir
         self.SetTitle("Add IWAD")
 
     def get_wildcard(self):
@@ -90,7 +91,7 @@ class AddSourcePortDialog(BaseAddNamedResourceDialog):
 class AddProfileDialog(AddProfileDialogWindow):
     def __init__(self, parent, profile=None):
         super().__init__(parent=parent)
-        self.dirname = "."
+        self.dirname = parent.app.settings.doomwaddir
         self.parent = parent
         self.app = parent.app
         self.profile = profile
