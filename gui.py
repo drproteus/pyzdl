@@ -247,7 +247,7 @@ class MainFrame(MainWindow):
         menu_load_config = filemenu.Append(wx.ID_FILE1, "&Load", " Load new config")
         menu_reload = filemenu.Append(wx.ID_FILE2, "&Reload", " Reload config")
         menu_save = filemenu.Append(
-            wx.ID_FILE3, "&Save", " Save profile args to config"
+            wx.ID_FILE3, "&Save", " Save config"
         )
 
         menuBar = wx.MenuBar()
@@ -260,9 +260,9 @@ class MainFrame(MainWindow):
         self.Bind(wx.EVT_MENU, self.on_reload, menu_reload)
         self.Bind(wx.EVT_MENU, self.on_save_config, menu_save)
 
-        self.profiles_list_box.Clear()
-        for profile_name, profile in self.app.profiles.items():
-            self.profiles_list_box.Append(profile_name)
+        self.refresh_profiles(sort=True)
+        self.profile_up_button.Hide()
+        self.profile_down_button.Hide()
 
         self.iwads_list_box.Clear()
         for iwad_name, iwad in self.app.iwads.items():
@@ -294,6 +294,14 @@ class MainFrame(MainWindow):
 
         self.on_update(None)
         self.Show()
+
+    def refresh_profiles(self, sort=True, reverse=False):
+        self.profiles_list_box.Clear()
+        iter = self.app.profiles.keys()
+        if sort:
+            iter = sorted(iter, reverse=reverse)
+        for profile_name in iter:
+            self.profiles_list_box.Append(profile_name)
 
     def get_selected_profile(self):
         profile_name = self.profiles_list_box.GetStringSelection()
