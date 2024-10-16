@@ -1,6 +1,9 @@
 <html>
     <head>
         <style>
+        body {
+            max-width: 1200px;
+        }
         #header-image {
             width: 32px;
         }
@@ -9,9 +12,16 @@
         }
         #screenshots ul {
             list-style: none;
+            column-count: 2;
+        }
+        @media screen and (max-width: 900px) {
+          #screenshots ul {
+            column-count: 1;
+          }
         }
         </style>
     </head>
+    <body>
     <h4><img id="header-image" src="./assets/doom-cacodemon.png"/> pyZDL</h4>
     <p>
         python GZDoom launcher (<a href="https://github.com/drproteus/pyzdl">github</a>)
@@ -48,6 +58,25 @@
                     <img src="./assets/screenshots/config-tab.png"/>
                 </figure>
             </li>
+            <li>
+                <figure>
+                    <figcaption><pre>pyzdl profiles ls</pre></figcaption>
+                    <img src="./assets/screenshots/ls-profiles.png"/>
+                </figure>
+            </li>
+            <li>
+                <figure>
+                    <figcaption><pre>pyzdl profiles inspect <PROFILE></pre></figcaption>
+                    <img src="./assets/screenshots/inspect-profile.png"/>
+                </figure>
+            </li>
+            <li>
+                <figure>
+                    <figcaption><pre>pyzdl config inspect</pre></figcaption>
+                    <img src="./assets/screenshots/inspect-settings.png"/>
+                </figure>
+            </li>
         </ul>
     </div>
+    </body>
 </html>
