@@ -10,6 +10,16 @@ from wxglade.wxglade_out import (
 )
 
 
+def message_dialog(msg, title, parent=None):
+    dialog = wx.MessageDialog(parent, msg, caption=title)
+    dialog.ShowModal()
+    dialog.Destroy()
+
+
+def exception_dialog(exc, parent=None):
+    message_dialog(str(exc), type(exc).__name__, parent=parent)
+
+
 class BaseAddNamedResourceDialog(AddNamedResourceDialogWindow):
     def __init__(self, parent):
         super().__init__(parent=parent)
@@ -282,6 +292,8 @@ class MainFrame(MainWindow):
 
     def launch_selected_profile(self):
         profile = self.get_selected_profile()
+        if not profile:
+            return
         self.app.launch_profile(profile.name)
 
     def on_click(self, e):
@@ -345,7 +357,11 @@ class MainFrame(MainWindow):
 
     def reload(self, config_path):
         current_tab = self.tabs.GetSelection()
-        app = setup(config_path)
+        try:
+            app = setup(config_path)
+        except Exception as e:
+            exception_dialog(e)
+            return
         new_frame = MainFrame(app, config_path)
         new_frame.tabs.SetSelection(current_tab)
         new_frame.Show()
@@ -422,9 +438,7 @@ def main(config_path, verbose):
     try:
         app = setup(config_path)
     except Exception as e:
-        dialog = wx.MessageDialog(None, str(e), caption=type(e).__name__)
-        dialog.ShowModal()
-        dialog.Destroy()
+        exception_dialog(e)
         return
 
     if verbose:
