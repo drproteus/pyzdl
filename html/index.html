@@ -23,6 +23,9 @@
             column-count: 1;
           }
         }
+        #steamcmd-download {
+            max-width: 800px;
+        }
         </style>
     </head>
     <body>
@@ -39,6 +42,16 @@
             <li>
                 <a href="https://github.com/drproteus/pyzdl/archive/refs/heads/master.zip">source</a>
             </li>
+        </ul>
+    </div>
+    <div id="features">
+        <b>Features</b>
+        <ul>
+            <li>Organize Source Ports, IWADs, WADs, and PK3s into profiles.</li>
+            <li>Separate save directories for each profile (optional).</li>
+            <li>Customize profiles with launch options.</li>
+            <li>Import and export ZDL files (work in progress).</li>
+            <li>Command line interface.</li>
         </ul>
     </div>
     <div id="screenshots">
@@ -81,6 +94,63 @@
                 </figure>
             </li>
         </ul>
+    </div>
+    <div id="steamcmd-download">
+        <b>Downloading Windows-only GZDoom Games From Steam</b>
+        <p>
+           Several great GZDoom games and mods are available on Steam,
+           and while most work great with the macOS GZDoom build it
+           takes some work to get the files.
+        </p>
+        <p>
+            If you don't already have steamcmd installed:
+        <pre>
+brew install --cask steamcmd
+        </pre>
+        </p>
+        <p>
+            For this example, we'll download <a href="https://steamdb.info/app/1072150/">Hedon</a>.
+        </p>
+        <p>
+            For convenience we'll download to /home/doomguy/wads/hedon,
+            but substitute a viable path as need.
+            Likewise, replace doomguy with your Steam user.
+        </p>
+        <p>
+        <pre>
+steamcmd +force_install_dir /home/doomguy/wads/hedon +@sSteamCmdForcePlatformType windows +login doomguy +app_update 1072150
+        </pre>
+        It's important +force_install_dir goes first, for reasons.
+        </p>
+        <p>
+            This one is simple because it's only one IWAD, Hedon.ipk3.
+            Given an already configured GZDoom source port, one needs only add the IWAD
+            then a profile pointing to the IWAD and port combination.
+        </p>
+        <p>
+            To do so via CLI:
+        <pre>
+# Add IWAD
+python cli.py iwads add Hedon /home/doomguy/wads/hedon/Hedon.ipk3
+# Add profile
+python cli.py profiles add Hedon GZDoom Hedon
+# Play Hedon!
+python cli.py run profile Hedon
+        </pre>
+        </p>
+        <p>
+            Other games come with additional *.wad, *.iwad, *.pk3, or *.ipk3 files.
+            Add these in the profile editor or by editing the config JSON directly.
+            Sometimes there's a bundled gzdoom.ini (or similarly named file).
+            <br/>
+            To add this to a profile, specify -config /path/to/gzdoom.ini in the editor args box
+            or by adding to to the "args" key in the profile JSON.
+        </p>
+        <p>
+            Other mods from <a href="https://www.moddb.com/">ModDB</a> use DOOM.WAD or DOOM2.WAD as an IWAD base.
+            Get a copy of from <a href="https://www.gog.com/en/game/doom_doom_ii">GOG</a>
+            or <a href="https://store.steampowered.com/agecheck/app/2280/">Steam</a>.
+        </p>
     </div>
     </body>
 </html>
