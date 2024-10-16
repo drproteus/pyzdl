@@ -1,7 +1,7 @@
 import wx
 import os
 import click
-from lib.util import default_options, setup, write_config
+from lib.util import default_gui_options, setup, write_config
 from lib.models import Profile, Resource, Iwad, SourcePort
 from wxglade.wxglade_out import (
     MainWindow,
@@ -272,16 +272,12 @@ class MainFrame(MainWindow):
         self.remove_iwad_button.Bind(wx.EVT_LEFT_UP, self.on_iwad_remove)
         self.remove_source_port_button.Bind(wx.EVT_LEFT_UP, self.on_source_port_remove)
 
-        self.profiles_list_box.Selection = 0
         self.on_update(None)
-
         self.Show()
 
     def get_selected_profile(self):
-        profile_name = self.choices[self.profiles_list_box.Selection]
+        profile_name = self.profiles_list_box.GetStringSelection()
         profile = self.app.profiles.get(profile_name, None)
-        if not profile:
-            raise click.ClickException(f"Could not find {profile_name} in config.")
         return profile
 
     def launch_selected_profile(self):
@@ -293,6 +289,8 @@ class MainFrame(MainWindow):
 
     def on_update(self, e):
         profile = self.get_selected_profile()
+        if not profile:
+            return
         self.profile_name.Label = profile.name
         self.args_box.Value = profile.args
         self.update_profile_tree_view()
@@ -417,15 +415,24 @@ class MainFrame(MainWindow):
 
 
 @click.command("pyzdl_gui")
-@click.option("--verbose", "-v", is_flag=True, default=False)
-@default_options
-def main(app, config_path, verbose):
+@default_gui_options
+def main(config_path, verbose):
+    gui = wx.App()
+
+    try:
+        app = setup(config_path)
+    except Exception as e:
+        dialog = wx.MessageDialog(None, str(e), caption=type(e).__name__)
+        dialog.ShowModal()
+        dialog.Destroy()
+        return
+
     if verbose:
         click.echo(f"Loading config from {config_path}", err=True)
         click.echo("Available profiles:")
         for name, _ in app.profiles.items():
             click.echo(f"* {name}", err=True)
-    gui = wx.App()
+
     frame = MainFrame(app, config_path)
     gui.MainLoop()
 

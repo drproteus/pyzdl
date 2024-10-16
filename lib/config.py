@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 PYZDL_ROOT = os.getenv("PYZDL_ROOT", str(Path.home().joinpath(".config", "pyzdl")))

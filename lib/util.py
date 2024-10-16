@@ -18,8 +18,7 @@ def setup(config_path):
     from lib.models import LoaderApp
 
     if not os.path.exists(CONFIG_PATH):
-        init_config = init_default_config()
-        return LoaderApp(**init_config)
+        return LoaderApp.from_json(init_default_config())
 
     if is_json(config_path):
         with open(config_path, "r") as f:
@@ -51,6 +50,20 @@ def default_options(fn):
     return wrapped
 
 
+def default_gui_options(fn):
+    @click.option(
+        "--config",
+        "config_path",
+        default=CONFIG_PATH,
+        type=click.Path(exists=False),
+    )
+    @click.option("--verbose", "-v", is_flag=True, default=False)
+    def wrapped(config_path, verbose, *args, **kwargs):
+        return fn(config_path, verbose, *args, **kwargs)
+
+    return wrapped
+
+
 def is_json(path):
     if Path(path).suffix == ".json":
         return True
@@ -73,6 +86,4 @@ def is_app(path):
 
 
 def expand_args(args):
-    return [
-        os.path.expanduser(os.path.expandvars(arg)) for arg in args
-    ]
+    return [os.path.expanduser(os.path.expandvars(arg)) for arg in args]
