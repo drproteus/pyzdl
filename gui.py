@@ -55,10 +55,14 @@ class BaseAddNamedResourceDialog(AddNamedResourceDialogWindow):
 
 
 class AddIwadDialog(BaseAddNamedResourceDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, iwad=None):
         super().__init__(parent)
         self.dirname = self.parent.app.settings.doomwaddir
         self.SetTitle("Add IWAD")
+        if iwad:
+            self.add_named_resource_name.Value = iwad.name
+            self.add_named_resource_file_path.Value = iwad.path
+            self.SetTitle("Edit IWAD")
 
     def get_wildcard(self):
         return "*.wad;*.iwad;*.pk3;*.ipk3"
@@ -80,9 +84,13 @@ class AddIwadDialog(BaseAddNamedResourceDialog):
 
 
 class AddSourcePortDialog(BaseAddNamedResourceDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, port=None):
         super().__init__(parent)
         self.SetTitle("Add Source Port")
+        if port:
+            self.add_named_resource_nameValue = port.name
+            self.add_named_resource_file_path.Value = port.executable.path
+            self.SetTitle("Edit Source Port")
 
     def on_confirm(self, e):
         if (
@@ -281,6 +289,8 @@ class MainFrame(MainWindow):
         self.add_source_port_button.Bind(wx.EVT_LEFT_UP, self.on_source_port_add)
         self.remove_iwad_button.Bind(wx.EVT_LEFT_UP, self.on_iwad_remove)
         self.remove_source_port_button.Bind(wx.EVT_LEFT_UP, self.on_source_port_remove)
+        self.edit_source_port_button.Bind(wx.EVT_LEFT_UP, self.on_source_port_edit)
+        self.edit_iwad_button.Bind(wx.EVT_LEFT_UP, self.on_iwad_edit)
 
         self.on_update(None)
         self.Show()
@@ -427,7 +437,24 @@ class MainFrame(MainWindow):
         if selected_iwad_name not in self.app.iwads:
             return
         del self.app.iwads[selected_iwad_name]
+        write_config(self.app, self.config_path)
         self.refresh()
+
+    def on_source_port_edit(self, e):
+        selected_port_name = self.source_ports_list_box.GetStringSelection()
+        if selected_port_name not in self.app.source_ports:
+            return
+        port = self.app.source_ports[selected_port_name]
+        dialog = AddSourcePortDialog(self, port=port)
+        dialog.Show()
+
+    def on_iwad_edit(self, e):
+        selected_iwad_name = self.iwads_list_box.GetStringSelection()
+        if selected_iwad_name not in self.app.iwads:
+            return
+        iwad = self.app.iwads[selected_iwad_name]
+        dialog = AddIwadDialog(self, iwad=iwad)
+        dialog.Show()
 
 
 @click.command("pyzdl_gui")
