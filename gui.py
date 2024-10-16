@@ -128,6 +128,7 @@ class AddProfileDialog(AddProfileDialogWindow):
         self.add_profile_file_move_up_button.Bind(wx.EVT_LEFT_UP, self.move_file_up)
         self.add_profile_file_move_down_button.Bind(wx.EVT_LEFT_UP, self.move_file_down)
         self.add_profile_file_button.Bind(wx.EVT_LEFT_UP, self.on_file_add)
+        self.Fit()
 
     def refresh_files(self):
         self.add_profile_files_list_box.Clear()
