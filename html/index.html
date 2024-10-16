@@ -95,6 +95,25 @@
             </li>
         </ul>
     </div>
+    <div id="about-config">
+        <b>Config</b>
+        <p>
+            By default PYZDL_ROOT is ~/.config/pyzdl.
+            This can be overriden by setting the $PYZDL_ROOT environment variable.
+            <br/>
+            The default config file is found at $PYZDL_ROOT/config.json.
+        </p>
+        <b>Profile Saves</b>
+        <p>
+            By default, profile saves are enabled.
+            When enabled, a savedir root will be created at $PYZDL_ROOT/saves.
+            <br/>
+            When running a profile $PROFILE, if no -savedir argument is configured,
+            it will launch with -savedir $PYZDL_ROOT/saves/$PROFILE.
+            <br/>
+            This ensures profiles don't overwrite each other's saves when using the same IWADs.
+        </p>
+    </div>
     <div id="steamcmd-download">
         <b>Downloading Windows-only GZDoom Games From Steam</b>
         <p>
