@@ -33,10 +33,13 @@ class Resource:
 
     @classmethod
     def from_json(cls, d):
-        return cls(path=d["path"])
+        if isinstance(d, dict):
+            # Backwards compatibility
+            return cls(path=d["path"])
+        return cls(path=d)
 
     def to_json(self):
-        return {"path": self.path}
+        return self.path
 
 
 @dataclass
@@ -77,9 +80,7 @@ class SourcePort:
     def to_json(self):
         return {
             "name": self.name,
-            "executable": {
-                "path": self.executable.path,
-            },
+            "executable": self.executable.to_json(),
             "description": self.description,
         }
 
@@ -87,23 +88,23 @@ class SourcePort:
 @dataclass
 class Iwad:
     name: str
-    iwad: Resource
+    file: Resource
 
     @property
     def path(self):
-        return self.iwad.path
+        return self.file.path
 
     @classmethod
     def from_json(cls, d):
         return cls(
             name=d["name"],
-            iwad=Resource.from_json(d["iwad"]),
+            file=Resource.from_json(d["file"]),
         )
 
     def to_json(self):
         return {
             "name": self.name,
-            "iwad": self.iwad.to_json(),
+            "file": self.file.to_json(),
         }
 
 
@@ -315,7 +316,7 @@ class LoaderApp:
         for i in get_config_indexes(config_iwads, "i"):
             name = config_iwads[f"i{i}n"]
             path = config_iwads[f"i{i}f"]
-            iwads[name] = Iwad(name=name, iwad=Resource(path=path))
+            iwads[name] = Iwad(name=name, file=Resource(path=path))
 
         return cls(
             source_ports=source_ports,

@@ -2,17 +2,14 @@
   "source_ports": [
     {
       "name": "GZDoom",
-      "executable": {
-        "path": "/Applications/GZDoom.app"
-      }
+      "executable": "/Applications/GZDoom.app",
+      "description": null
     }
   ],
   "iwads": [
     {
       "name": "Doom",
-      "iwad": {
-        "path": "/Users/jake/OneDrive/games/wads/DOOM.WAD"
-      }
+      "file": "/Users/jake/OneDrive/games/wads/DOOM.WAD"
     }
   ],
   "profiles": [
@@ -21,17 +18,19 @@
       "port": "GZDoom",
       "iwad": "Doom",
       "files": [
-        {
-          "path": "/Users/jake/OneDrive/Games/wads/brutalv22test4/brutalv22test4.pk3"
-        },
-        {
-          "path": "/Users/jake/OneDrive/Games/wads/MusicPackV2.1/DOOMMETALMODIFIED.wad"
-        },
-        {
-          "path": "/Users/jake/OneDrive/Games/wads/BD-Doomgirl-hud.wad"
-        }
+        "/Users/jake/OneDrive/Games/wads/brutalv22test4/brutalv22test4.pk3",
+        "/Users/jake/OneDrive/Games/wads/MusicPackV2.1/DOOMMETALMODIFIED.wad"
       ],
       "args": "-timedemo ./brutal.lmp"
     }
-  ]
+  ],
+  "settings": {
+    "pyzdl_root": "/Users/jake/.config/pyzdl",
+    "config_path": "/Users/jake/.config/pyzdl/config.json",
+    "profile_saves": true,
+    "savedir_path": "/Users/jake/.config/pyzdl/saves",
+    "vars": {
+      "doomwaddir": "/Users/jake/.config/pyzdl"
+    }
+  }
 }

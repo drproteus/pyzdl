@@ -17,8 +17,8 @@ class ConfigTests(unittest.TestCase):
         app = self.get_app()
         self.assertTrue("GZDoom" in app.source_ports)
         self.assertTrue("Doom" in app.iwads)
-        self.assertEqual(app.iwads["Doom"].iwad.name, "DOOM.WAD")
-        self.assertEqual(len(app.profiles["Brutal Doom"].files), 3)
+        self.assertEqual(app.iwads["Doom"].file.name, "DOOM.WAD")
+        self.assertEqual(len(app.profiles["Brutal Doom"].files), 2)
 
     def test_zdl_config(self):
         app = self.get_app()
