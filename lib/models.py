@@ -46,7 +46,6 @@ class Resource:
 class SourcePort:
     name: str
     executable: Resource
-    description: Optional[str] = None
 
     def is_valid(self):
         # TODO: Validate executable or macOS app is GZDoom source port.
@@ -74,14 +73,12 @@ class SourcePort:
         return cls(
             name=d["name"],
             executable=Resource.from_json(d["executable"]),
-            description=d.get("description"),
         )
 
     def to_json(self):
         return {
             "name": self.name,
             "executable": self.executable.to_json(),
-            "description": self.description,
         }
 
 
