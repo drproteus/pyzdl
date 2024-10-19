@@ -75,7 +75,7 @@ class AddIwadDialog(BaseAddNamedResourceDialog):
             return
         iwad = Iwad(
             name=self.add_named_resource_name.Value,
-            iwad=Resource(path=self.add_named_resource_file_path.Value),
+            file=Resource(path=self.add_named_resource_file_path.Value),
         )
         self.app.iwads[iwad.name] = iwad
         write_config(self.app, self.parent.config_path)
