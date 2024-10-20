@@ -1,0 +1,38 @@
+<html>
+    {% include "style.html" %}
+<div id="profile-port-info">
+    <details>
+        <summary>{{profile.port.name}}</summary>
+        {{profile.port.executable.path}}
+    </details>
+</div>
+<div id="profile-iwad-info">
+    <details>
+        <summary>{{profile.iwad.name}}</summary>
+        {{profile.iwad.path}}
+    </details>
+</div>
+{% if profile.files %}
+<div id="profile-file-list">
+    Files:
+    <ul>
+        {% for file in profile.files %}
+            <li>
+                <details>
+                    <summary>{{file.name}}</summary>
+                    {{file.path}}
+                </details>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+<div id="profile-json">
+    <details>
+        <summary>Config</summary>
+        <pre>
+{{profile_json}}
+        </pre>
+    </details>
+</div>
+</html>

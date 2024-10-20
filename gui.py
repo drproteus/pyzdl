@@ -1,12 +1,21 @@
 import wx
+import wx.html2
 import os
 import click
+import json
 from lib.util import default_gui_options, setup, write_config
 from lib.models import Profile, Resource, Iwad, SourcePort
 from wxglade.wxglade_out import (
     MainWindow,
     AddProfileDialogWindow,
     AddNamedResourceDialogWindow,
+)
+from jinja2 import Environment, PackageLoader, select_autoescape
+
+
+env = Environment(
+    loader=PackageLoader("gui"),
+    autoescape=select_autoescape(),
 )
 
 
@@ -246,13 +255,13 @@ class MainFrame(MainWindow):
         menu_exit = filemenu.Append(wx.ID_EXIT, "&Exit", " Terminate the program")
         menu_load_config = filemenu.Append(wx.ID_FILE1, "&Load", " Load new config")
         menu_reload = filemenu.Append(wx.ID_FILE2, "&Reload", " Reload config")
-        menu_save = filemenu.Append(
-            wx.ID_FILE3, "&Save", " Save config"
-        )
+        menu_save = filemenu.Append(wx.ID_FILE3, "&Save", " Save config")
 
         menuBar = wx.MenuBar()
         menuBar.Append(filemenu, "&File")
         self.SetMenuBar(menuBar)
+
+        self.setup_profile_html_view()
 
         self.Bind(wx.EVT_MENU, self.on_about, menu_about)
         self.Bind(wx.EVT_MENU, self.on_open, menu_open)
@@ -295,6 +304,21 @@ class MainFrame(MainWindow):
         self.on_update(None)
         self.Show()
 
+    def setup_profile_html_view(self):
+        # Replace Profile HTML placeholder with actual WebView.
+        # Can't simply subclass wx.html2.WebView, calling New is required.
+        profile_html_view = wx.html2.WebView.New(
+            parent=self.profile_html_view.Parent,
+            id=self.profile_html_view.Id,
+            pos=self.profile_html_view.Position,
+            size=self.profile_html_view.Size,
+            name=self.profile_html_view.Name,
+        )
+        self.sizer_7.Replace(self.profile_html_view, profile_html_view)
+        self.profile_html_view = profile_html_view
+        template = env.get_template("placeholder.html")
+        self.profile_html_view.SetPage(template.render(), "")
+
     def refresh_profiles(self, sort=True, reverse=False):
         self.profiles_list_box.Clear()
         iter = self.app.profiles.keys()
@@ -332,18 +356,24 @@ class MainFrame(MainWindow):
 
     def update_profile_tree_view(self):
         profile = self.get_selected_profile()
-        self.profile_tree_view.DeleteAllItems()
-        root = self.profile_tree_view.AddRoot(profile.port.name)
-        iwad = self.profile_tree_view.AppendItem(root, "IWAD")
-        self.profile_tree_view.AppendItem(iwad, profile.iwad.name)
-        files = self.profile_tree_view.AppendItem(root, "Files")
-        for file in profile.files:
-            self.profile_tree_view.AppendItem(files, file.name)
-        if profile.args:
-            args = self.profile_tree_view.AppendItem(root, "Extra")
-            for arg in profile.args.split(" "):
-                self.profile_tree_view.AppendItem(args, arg)
-        self.profile_tree_view.ExpandAll()
+        # self.profile_tree_view.DeleteAllItems()
+        # root = self.profile_tree_view.AddRoot(profile.port.name)
+        # iwad = self.profile_tree_view.AppendItem(root, "IWAD")
+        # self.profile_tree_view.AppendItem(iwad, profile.iwad.name)
+        # files = self.profile_tree_view.AppendItem(root, "Files")
+        # for file in profile.files:
+        #     self.profile_tree_view.AppendItem(files, file.name)
+        # if profile.args:
+        #     args = self.profile_tree_view.AppendItem(root, "Extra")
+        #     for arg in profile.args.split(" "):
+        #         self.profile_tree_view.AppendItem(args, arg)
+        # self.profile_tree_view.ExpandAll()
+        template = env.get_template("profile.html")
+        html = template.render(
+            profile=profile,
+            profile_json=json.dumps(profile.to_json(), indent=2),
+        )
+        self.profile_html_view.SetPage(html, "/")
 
     def on_about(self, e):
         dialog = wx.MessageDialog(self, "python GZDoom launcher", "About pyZDL", wx.OK)
