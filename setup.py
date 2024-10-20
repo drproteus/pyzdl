@@ -8,7 +8,7 @@ Usage:
 from setuptools import setup
 
 APP = ["gui.py"]
-DATA_FILES = []
+DATA_FILES = ["templates"]
 OPTIONS = {}
 
 setup(
