@@ -372,6 +372,7 @@ class MainFrame(MainWindow):
         html = template.render(
             profile=profile,
             profile_json=json.dumps(profile.to_json(), indent=2),
+            profile_args=profile.args.split(" ") if profile.args else [],
         )
         self.profile_html_view.SetPage(html, "/")
 

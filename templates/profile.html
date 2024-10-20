@@ -27,6 +27,16 @@
     </ul>
 </div>
 {% endif %}
+{% if profile_args %}
+<div id="profile-args-list">
+    Extra Args:
+    <ul>
+    {% for arg in profile_args %}
+        <li>{{arg}}</li>
+    {% endfor %}
+    </ul>
+</div>
+{% endif %}
 <div id="profile-json">
     <details>
         <summary>Config</summary>
