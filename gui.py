@@ -341,6 +341,7 @@ class MainFrame(MainWindow):
         profile = self.get_selected_profile()
         if not profile:
             return
+        write_config(self.app, self.config_path)
         self.app.launch_profile(profile.name)
 
     def on_click(self, e):
