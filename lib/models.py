@@ -5,10 +5,10 @@ import configparser
 import re
 import json
 import base64
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 from lib.util import is_zdl, is_json, is_app, expand_args
-from lib.config import AppSettings
+from lib.config import PYZDL_ROOT, AppSettings
 
 
 class LoaderError(Exception):
@@ -118,18 +118,36 @@ class Profile:
     name: str
     port: SourcePort
     iwad: Iwad
-    files: Optional[list[Resource]]
-    args: Optional[str]
-    image: Optional[Resource]
+    files: Optional[list[Resource]] = field(default_factory=lambda: [])
+    args: str = ""
+    image: Optional[Resource] = None
+    config: Optional[Resource] = None
+    savedir: Optional[Resource] = None
 
     def launch(self, extra_args=None):
         self.port.launch(
             self.get_launch_args(extra_args=extra_args),
         )
 
+    def get_default_config(self, makedirs=False):
+        config_dir = os.path.join(PYZDL_ROOT, "configs", self.name)
+        os.makedirs(config_dir, exist_ok=True)  # HACK
+        return Resource(path=os.path.join(config_dir, "gzdoom.ini"))
+
+    def get_args(self, extra_args=None):
+        args = extra_args or []
+        if self.args:
+            args += self.args.split(" ")
+        if "-config" not in args:
+            args.append("-config")
+            if self.config:
+                args.append(self.config.path)
+            else:
+                args.append(self.get_default_config().path)
+        return args
+
     def get_launch_args(self, extra_args=None):
         args = ["-iwad", self.iwad.path]
-        extra_args = extra_args or []
         for file in self.files or []:
             if not file.exists():
                 raise LoaderError(f"{file.path} does not exist!")
@@ -137,9 +155,7 @@ class Profile:
                 raise LoaderError(f"{file.path} should be a file, not a directory!")
             args.append("-file")
             args.append(file.path)
-        if self.args:
-            args += self.args.split(" ")
-        args += extra_args
+        args += self.get_args(extra_args=extra_args)
         return args
 
     @classmethod
@@ -150,7 +166,9 @@ class Profile:
             iwad=Iwad.from_json(d["iwad"]),
             files=[Resource.from_json(f) for f in d.get("files", [])],
             args=d.get("args", ""),
-            image=Resource.from_json(d["image"] if "image" in d else None),
+            image=Resource.from_json(d["image"]) if "image" in d else None,
+            config=Resource.from_json(d["config"]) if "config" in d else None,
+            savedir=Resource.from_json(d["savedir"]) if "savedir" in d else None,
         )
 
     def to_json(self):
@@ -161,6 +179,8 @@ class Profile:
             "files": [f.to_json() for f in self.files or []],
             "args": self.args or "",
             "image": self.image.to_json() if self.image else None,
+            "config": self.config.to_json() if self.config else None,
+            "savedir": self.savedir.to_json() if self.savedir else None,
         }
 
     def get_description(self):
@@ -176,7 +196,7 @@ class Profile:
         config["zdl.save"] = {
             "port": self.port.name,
             "iwad": self.iwad.name,
-            "extra": self.args or "",
+            "extra": " ".join(self.get_args()),
         }
         for i, file in enumerate(self.files or []):
             config["zdl.save"][f"file{i}"] = file.path
@@ -262,7 +282,7 @@ class LoaderApp:
         return self.source_ports.pop(name, None)
 
     def add_iwad(self, name, path):
-        self.iwads[name] = Iwad(name=name, iwad=Resource(path=path))
+        self.iwads[name] = Iwad(name=name, file=Resource(path=path))
 
     def rm_iwad(self, name):
         return self.iwads.pop(name, None)
@@ -357,13 +377,20 @@ class LoaderApp:
         profile = Profile.from_file(self, path, name=name)
         self.profiles[profile.name] = profile
 
-    def launch_profile(self, name, extra_args=None):
+    def get_profile_launch_args(self, profile, extra_args=None):
         extra_args = extra_args or []
-        profile = self.profiles[name]
         launch_args = profile.get_launch_args(extra_args=extra_args)
         if self.settings.profile_saves and "-savedir" not in launch_args:
+            savedir = (
+                profile.savedir.path if profile.savedir else self.settings.savedir_path
+            )
             launch_args += [
                 "-savedir",
-                os.path.join(self.settings.savedir_path, profile.name),
+                os.path.join(savedir, profile.name),
             ]
+        return launch_args
+
+    def launch_profile(self, name, extra_args=None):
+        profile = self.profiles[name]
+        launch_args = self.get_profile_launch_args(profile, extra_args=extra_args)
         profile.port.launch(args=launch_args, env=self.settings.get_env())

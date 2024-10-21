@@ -33,6 +33,13 @@ def ls_profiles(app, config_path):
         click.echo(f"{profile_name} ({profile.port.name})")
 
 
+@profiles.command("launch-args")
+@click.argument("name")
+@default_options
+def show_profile_launch_args(app, config_path, name):
+    click.echo(app.get_profile_launch_args(app.profiles[name]))
+
+
 @ports.command("ls")
 @default_options
 def ls_ports(app, config_path):
@@ -156,7 +163,7 @@ def run_profile(app, config_path, name, extra_args):
         profile = app.profiles[name]
     except KeyError:
         raise click.ClickException(f"Could not find profile {name} in config.")
-    profile.port.launch(profile.name, extra_args=extra_args)
+    app.launch_profile(profile.name, extra_args=extra_args)
 
 
 @run.command("zdl", context_settings={"ignore_unknown_options": True})

@@ -46,8 +46,8 @@ class ConfigTests(unittest.TestCase):
             t.seek(0)
             profile2 = app.load_zdl(t.name)
         self.assertEqual(
-            profile.get_launch_args(),
-            profile2.get_launch_args(),
+            " ".join(profile.get_launch_args()),
+            " ".join(profile2.get_launch_args()),
         )
 
 
