@@ -4,6 +4,7 @@ import subprocess
 import configparser
 import re
 import json
+import base64
 from dataclasses import dataclass
 from typing import Optional
 from lib.util import is_zdl, is_json, is_app, expand_args
@@ -40,6 +41,13 @@ class Resource:
 
     def to_json(self):
         return self.path
+
+    @property
+    def base64(self):
+        if not self.exists():
+            return
+        with open(self.path, "rb") as f:
+            return base64.b64encode(f.read()).decode("utf-8")
 
 
 @dataclass
@@ -112,6 +120,7 @@ class Profile:
     iwad: Iwad
     files: Optional[list[Resource]]
     args: Optional[str]
+    image: Optional[Resource]
 
     def launch(self, extra_args=None):
         self.port.launch(
@@ -141,6 +150,7 @@ class Profile:
             iwad=Iwad.from_json(d["iwad"]),
             files=[Resource.from_json(f) for f in d.get("files", [])],
             args=d.get("args", ""),
+            image=Resource.from_json(d["image"] if "image" in d else None),
         )
 
     def to_json(self):
@@ -150,6 +160,7 @@ class Profile:
             "iwad": self.iwad.to_json(),
             "files": [f.to_json() for f in self.files or []],
             "args": self.args or "",
+            "image": self.image.to_json() if self.image else None,
         }
 
     def get_description(self):

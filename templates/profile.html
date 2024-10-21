@@ -1,5 +1,10 @@
 <html>
     {% include "style.html" %}
+{% if profile.image.path %}
+<div id="profile-image-panel">
+    <img src="data:image;base64,{{profile.image.base64}}" style="height: 200px;"/>
+</div>
+{% endif %}
 <div id="profile-port-info">
     <details>
         <summary>{{profile.port.name}}</summary>
