@@ -13,7 +13,7 @@ test:
 
 pages/index.html:
 	mkdir -p pages/
-	cp html/index.html pages/index.html
+	cp -av templates/site/*.html pages/.
 	cp -av assets pages/assets
 
 pages: pages/index.html
@@ -23,5 +23,5 @@ clean-pages:
 	rm -rf pages/*
 
 .PHONY: serve-pages
-serve-ages: pages
+serve-pages: pages
 	python -m http.server -d pages/
