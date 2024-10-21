@@ -300,6 +300,11 @@ class MainFrame(MainWindow):
         self.remove_source_port_button.Bind(wx.EVT_LEFT_UP, self.on_source_port_remove)
         self.edit_source_port_button.Bind(wx.EVT_LEFT_UP, self.on_source_port_edit)
         self.edit_iwad_button.Bind(wx.EVT_LEFT_UP, self.on_iwad_edit)
+        self.profiles_list_box.Bind(wx.EVT_KEY_UP, self.handle_keypress)
+        self.args_box.Bind(wx.EVT_KEY_UP, self.handle_keypress)
+        if self.app.profiles:
+            self.profiles_list_box.SetSelection(0)
+        self.profiles_list_box.SetFocus()
 
         self.on_update(None)
         self.Show()
@@ -494,6 +499,11 @@ class MainFrame(MainWindow):
         iwad = self.app.iwads[selected_iwad_name]
         dialog = AddIwadDialog(self, iwad=iwad)
         dialog.Show()
+
+    def handle_keypress(self, e):
+        keycode = e.GetKeyCode()
+        if keycode == wx.WXK_RETURN:
+            self.launch_selected_profile()
 
 
 @click.command("pyzdl_gui")
