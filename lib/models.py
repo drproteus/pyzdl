@@ -129,9 +129,8 @@ class Profile:
             self.get_launch_args(extra_args=extra_args),
         )
 
-    def get_default_config(self, makedirs=False):
+    def get_default_config(self):
         config_dir = os.path.join(PYZDL_ROOT, "configs", self.name)
-        os.makedirs(config_dir, exist_ok=True)  # HACK
         return Resource(path=os.path.join(config_dir, "gzdoom.ini"))
 
     def get_args(self, extra_args=None):
@@ -392,5 +391,7 @@ class LoaderApp:
 
     def launch_profile(self, name, extra_args=None):
         profile = self.profiles[name]
+        if not profile.config and "-config" not in profile.args:
+            os.makedirs(os.path.join(PYZDL_ROOT, "configs", profile.name), exist_ok=True)
         launch_args = self.get_profile_launch_args(profile, extra_args=extra_args)
         profile.port.launch(args=launch_args, env=self.settings.get_env())
