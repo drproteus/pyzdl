@@ -5,6 +5,7 @@ import configparser
 import re
 import json
 import base64
+import shutil
 from dataclasses import dataclass, field
 from typing import Optional
 from lib.util import is_zdl, is_json, is_app, expand_args
@@ -135,7 +136,6 @@ class Profile:
         return os.path.join(PYZDL_ROOT, "profiles", self.name)
 
     def get_savedir_path(self):
-        print(self.savedir)
         return self.savedir.path if self.savedir else os.path.join(
             self.get_profile_path(), "saves",
         )
@@ -389,6 +389,10 @@ class LoaderApp:
         profile = Profile.from_file(self, path, name=name)
         self.profiles[profile.name] = profile
 
+    @classmethod
+    def get_default_gzdoom_ini(cls):
+        return Resource(path=os.path.join(PYZDL_ROOT, "defaults", "gzdoom.ini"))
+
     def get_profile_launch_args(self, profile, extra_args=None):
         extra_args = extra_args or []
         launch_args = profile.get_launch_args(extra_args=extra_args)
@@ -401,7 +405,12 @@ class LoaderApp:
 
     def launch_profile(self, name, extra_args=None):
         profile = self.profiles[name]
-        if self.settings.profile_saves or (not profile.config and "-config" not in profile.args):
+        use_default_config = not profile.config and "-config" not in profile.args
+        if self.settings.profile_saves or use_default_config:
             os.makedirs(profile.get_profile_path(), exist_ok=True)
+        if use_default_config:
+            default = self.get_default_gzdoom_ini()
+            if default.exists():
+                shutil.copy(default.path, profile.get_default_config_path())
         launch_args = self.get_profile_launch_args(profile, extra_args=extra_args)
         profile.port.launch(args=launch_args, env=self.settings.get_env())
