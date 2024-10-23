@@ -27,5 +27,4 @@ serve-pages: pages
 	python -m http.server -d pages/
 
 pages/docs:
-	cat requirements.txt | grep pdoc | xargs -I {} pip install {}
 	python docgen.py
