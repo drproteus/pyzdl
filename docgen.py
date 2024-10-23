@@ -25,8 +25,7 @@ with tempfile.TemporaryDirectory() as tmpdir:
     modules = ["pyzdl"]  # Public submodules are auto-imported
     context = pdoc.Context()
 
-    modules = [pdoc.Module(mod, context=context)
-            for mod in modules]
+    modules = [pdoc.Module(mod, context=context, skip_errors=True) for mod in modules]
     pdoc.link_inheritance(context)
 
     def recursive_htmls(mod):
