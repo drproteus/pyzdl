@@ -5,7 +5,7 @@ from pathlib import Path
 from lib.config import PYZDL_ROOT, CONFIG_PATH
 
 
-def init_default_config():
+def init_default_config() -> dict:
     return {
         "source_ports": {},
         "iwads": {},
@@ -64,20 +64,20 @@ def default_gui_options(fn):
     return wrapped
 
 
-def is_json(path):
+def is_json(path: str) -> bool:
     if Path(path).suffix == ".json":
         return True
     return False
 
 
-def is_zdl(path):
+def is_zdl(path: str) -> bool:
     suffix = Path(path).suffix
     if suffix == ".zdl" or suffix == ".ini":
         return True
     return False
 
 
-def is_app(path):
+def is_app(path: str) -> bool:
     """Check if path is valid macOS application with contents."""
     p = Path(path)
     if p.suffix == ".app" and p.is_dir():
@@ -85,5 +85,5 @@ def is_app(path):
     return False
 
 
-def expand_args(args):
+def expand_args(args: list[str]) -> list[str]:
     return [os.path.expanduser(os.path.expandvars(arg)) for arg in args]

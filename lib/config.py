@@ -15,15 +15,15 @@ class AppSettings:
     doomwadpath_override: Optional[list[str]] = None
 
     @property
-    def config_path(self):
+    def config_path(self) -> str:
         return CONFIG_PATH
 
     @property
-    def pyzdl_root(self):
+    def pyzdl_root(self) -> str:
         return PYZDL_ROOT
 
     @property
-    def doomwaddir(self):
+    def doomwaddir(self) -> str:
         return self.doomwaddir_override or os.getenv("DOOMWADDIR", self.pyzdl_root)
 
     @property
@@ -34,7 +34,7 @@ class AppSettings:
         if env_var:
             return env_var.split(";")
 
-    def get_env(self):
+    def get_env(self) -> dict:
         env = {}
         if self.doomwaddir:
             env["DOOMWADDIR"] = self.doomwaddir
@@ -43,7 +43,7 @@ class AppSettings:
         return env
 
     @classmethod
-    def from_json(cls, d):
+    def from_json(cls, d: dict) -> "AppSettings":
         if not d:
             return cls()
         return cls(
@@ -52,7 +52,7 @@ class AppSettings:
             doomwadpath_override=d.get("vars", {}).get("doomwadpath"),
         )
 
-    def to_json(self):
+    def to_json(self) -> dict:
         return {
             "pyzdl_root": self.pyzdl_root,
             "config_path": self.config_path,
