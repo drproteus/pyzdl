@@ -34,6 +34,8 @@ class Resource:
 
     @classmethod
     def from_json(cls, d):
+        if d is None:
+            return None
         if isinstance(d, dict):
             # Backwards compatibility
             return cls(path=d["path"])
@@ -129,9 +131,20 @@ class Profile:
             self.get_launch_args(extra_args=extra_args),
         )
 
+    def get_profile_path(self):
+        return os.path.join(PYZDL_ROOT, "profiles", self.name)
+
+    def get_savedir_path(self):
+        print(self.savedir)
+        return self.savedir.path if self.savedir else os.path.join(
+            self.get_profile_path(), "saves",
+        )
+
+    def get_default_config_path(self):
+        return os.path.join(self.get_profile_path(), "gzdoom.ini")
+
     def get_default_config(self):
-        config_dir = os.path.join(PYZDL_ROOT, "configs", self.name)
-        return Resource(path=os.path.join(config_dir, "gzdoom.ini"))
+        return Resource(path=self.get_default_config_path())
 
     def get_args(self, extra_args=None):
         args = extra_args or []
@@ -165,9 +178,9 @@ class Profile:
             iwad=Iwad.from_json(d["iwad"]),
             files=[Resource.from_json(f) for f in d.get("files", [])],
             args=d.get("args", ""),
-            image=Resource.from_json(d["image"]) if "image" in d else None,
-            config=Resource.from_json(d["config"]) if "config" in d else None,
-            savedir=Resource.from_json(d["savedir"]) if "savedir" in d else None,
+            image=Resource.from_json(d.get("image")),
+            config=Resource.from_json(d.get("config")),
+            savedir=Resource.from_json(d.get("savedir")),
         )
 
     def to_json(self):
@@ -380,18 +393,15 @@ class LoaderApp:
         extra_args = extra_args or []
         launch_args = profile.get_launch_args(extra_args=extra_args)
         if self.settings.profile_saves and "-savedir" not in launch_args:
-            savedir = (
-                profile.savedir.path if profile.savedir else self.settings.savedir_path
-            )
             launch_args += [
                 "-savedir",
-                os.path.join(savedir, profile.name),
+                profile.get_savedir_path(),
             ]
         return launch_args
 
     def launch_profile(self, name, extra_args=None):
         profile = self.profiles[name]
-        if not profile.config and "-config" not in profile.args:
-            os.makedirs(os.path.join(PYZDL_ROOT, "configs", profile.name), exist_ok=True)
+        if self.settings.profile_saves or (not profile.config and "-config" not in profile.args):
+            os.makedirs(profile.get_profile_path(), exist_ok=True)
         launch_args = self.get_profile_launch_args(profile, extra_args=extra_args)
         profile.port.launch(args=launch_args, env=self.settings.get_env())

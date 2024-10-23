@@ -10,7 +10,6 @@ CONFIG_PATH = os.getenv("PYZDL_CONFIG_PATH", os.path.join(PYZDL_ROOT, "config.js
 @dataclass
 class AppSettings:
     profile_saves: bool = False
-    savedir_path_override: Optional[str] = None
     # Source port environment variables
     doomwaddir_override: Optional[str] = None
     doomwadpath_override: Optional[list[str]] = None
@@ -22,12 +21,6 @@ class AppSettings:
     @property
     def pyzdl_root(self):
         return PYZDL_ROOT
-
-    @property
-    def savedir_path(self):
-        return self.savedir_path_override or os.getenv(
-            "PYZDL_SAVEDIR_PATH", os.path.join(self.pyzdl_root, "saves")
-        )
 
     @property
     def doomwaddir(self):
@@ -55,7 +48,6 @@ class AppSettings:
             return cls()
         return cls(
             profile_saves=d.get("profile_saves", False),
-            savedir_path_override=d.get("savedir_path"),
             doomwaddir_override=d.get("vars", {}).get("doomwaddir"),
             doomwadpath_override=d.get("vars", {}).get("doomwadpath"),
         )
@@ -65,7 +57,6 @@ class AppSettings:
             "pyzdl_root": self.pyzdl_root,
             "config_path": self.config_path,
             "profile_saves": self.profile_saves,
-            "savedir_path": self.savedir_path,
             "vars": {
                 "doomwaddir": self.doomwaddir,
                 "doomwadpath": self.doomwadpath,
