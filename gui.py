@@ -257,8 +257,12 @@ class MainFrame(MainWindow):
         menu_reload = filemenu.Append(wx.ID_FILE2, "&Reload", " Reload config")
         menu_save = filemenu.Append(wx.ID_FILE3, "&Save", " Save config")
         filemenu.Append(wx.ID_FILE4, kind=wx.ITEM_SEPARATOR)
-        menu_open_config_dir = filemenu.Append(wx.ID_FILE5, "&Config Folder", "Open Config Folder")
-        menu_open_doomwaddir = filemenu.Append(wx.ID_FILE6, "&DOOMWADDIR", "Open WADs Folder")
+        menu_open_config_dir = filemenu.Append(
+            wx.ID_FILE5, "&Config Folder", "Open Config Folder"
+        )
+        menu_open_doomwaddir = filemenu.Append(
+            wx.ID_FILE6, "&DOOMWADDIR", "Open WADs Folder"
+        )
 
         menuBar = wx.MenuBar()
         menuBar.Append(filemenu, "&File")

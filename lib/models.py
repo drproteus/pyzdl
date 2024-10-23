@@ -144,8 +144,13 @@ class Profile:
         return os.path.join(PYZDL_ROOT, "profiles", self.name)
 
     def get_savedir_path(self) -> str:
-        return self.savedir.path if self.savedir else os.path.join(
-            self.get_profile_path(), "saves",
+        return (
+            self.savedir.path
+            if self.savedir
+            else os.path.join(
+                self.get_profile_path(),
+                "saves",
+            )
         )
 
     def get_default_config_path(self) -> str:
