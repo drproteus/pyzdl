@@ -52,6 +52,14 @@ class Resource:
         with open(self.path, "rb") as f:
             return base64.b64encode(f.read()).decode("utf-8")
 
+    def open(self):
+        if sys.platform == "darwin":
+            subprocess.call(["open", self.path])
+        elif sys.platform == "win32":
+            subprocess.call(["explorer", self.path])
+        elif sys.platform == "linux":
+            subprocess.call(["xdg-open", self.path])
+
 
 @dataclass
 class SourcePort:

@@ -3,7 +3,7 @@ import wx.html2
 import os
 import click
 import json
-from lib.util import default_gui_options, setup, write_config
+from lib.util import default_gui_options, setup, write_config, PYZDL_ROOT
 from lib.models import Profile, Resource, Iwad, SourcePort
 from wxglade.wxglade_out import (
     MainWindow,
@@ -256,6 +256,9 @@ class MainFrame(MainWindow):
         menu_load_config = filemenu.Append(wx.ID_FILE1, "&Load", " Load new config")
         menu_reload = filemenu.Append(wx.ID_FILE2, "&Reload", " Reload config")
         menu_save = filemenu.Append(wx.ID_FILE3, "&Save", " Save config")
+        filemenu.Append(wx.ID_FILE4, kind=wx.ITEM_SEPARATOR)
+        menu_open_config_dir = filemenu.Append(wx.ID_FILE5, "&Config Folder", "Open Config Folder")
+        menu_open_doomwaddir = filemenu.Append(wx.ID_FILE6, "&DOOMWADDIR", "Open WADs Folder")
 
         menuBar = wx.MenuBar()
         menuBar.Append(filemenu, "&File")
@@ -268,6 +271,8 @@ class MainFrame(MainWindow):
         self.Bind(wx.EVT_MENU, self.on_load_config, menu_load_config)
         self.Bind(wx.EVT_MENU, self.on_reload, menu_reload)
         self.Bind(wx.EVT_MENU, self.on_save_config, menu_save)
+        self.Bind(wx.EVT_MENU, self.on_open_config_dir, menu_open_config_dir)
+        self.Bind(wx.EVT_MENU, self.on_open_doomwaddir, menu_open_doomwaddir)
 
         self.refresh_profiles(sort=True)
         self.profile_up_button.Hide()
@@ -506,6 +511,12 @@ class MainFrame(MainWindow):
         keycode = e.GetKeyCode()
         if keycode == wx.WXK_RETURN:
             self.launch_selected_profile()
+
+    def on_open_config_dir(self, e):
+        Resource(path=PYZDL_ROOT).open()
+
+    def on_open_doomwaddir(self, e):
+        Resource(path=self.app.settings.doomwaddir).open()
 
 
 @click.command("pyzdl_gui")
