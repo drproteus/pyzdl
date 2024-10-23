@@ -16,7 +16,7 @@ pages/index.html:
 	cp -av templates/site/*.html pages/.
 	cp -av assets pages/assets
 
-pages: pages/index.html pages/docs
+pages: pages/index.html
 
 .PHONY: clean-pages
 clean-pages:
@@ -25,6 +25,3 @@ clean-pages:
 .PHONY: serve-pages
 serve-pages: pages
 	python -m http.server -d pages/
-
-pages/docs:
-	python docgen.py
