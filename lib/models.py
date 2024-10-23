@@ -429,7 +429,7 @@ class LoaderApp:
         use_default_config = not profile.config and "-config" not in profile.args
         if self.settings.profile_saves or use_default_config:
             os.makedirs(profile.get_profile_path(), exist_ok=True)
-        if use_default_config:
+        if use_default_config and not profile.get_default_config().exists():
             default = self.get_default_gzdoom_ini()
             if default.exists():
                 shutil.copy(default.path, profile.get_default_config_path())
