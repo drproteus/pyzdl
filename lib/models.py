@@ -146,6 +146,14 @@ class Profile:
     def get_default_config(self):
         return Resource(path=self.get_default_config_path())
 
+    def get_cover_art(self) -> Optional[Resource]:
+        filenames = ["cover.jpg", "cover.png"]
+        for filename in filenames:
+            image = Resource(path=os.path.join(self.get_profile_path(), filename))
+            if image.exists():
+                return image
+        return None
+
     def get_args(self, extra_args=None):
         args = extra_args or []
         if self.args:

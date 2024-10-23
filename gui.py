@@ -375,6 +375,7 @@ class MainFrame(MainWindow):
         #         self.profile_tree_view.AppendItem(args, arg)
         # self.profile_tree_view.ExpandAll()
         template = env.get_template("profile.html")
+        profile.image = profile.image or profile.get_cover_art()
         html = template.render(
             profile=profile,
             profile_json=json.dumps(profile.to_json(), indent=2),

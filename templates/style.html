@@ -1,7 +1,12 @@
 <style>
 :root {
     color-scheme: light dark;
+    overscroll-behavior: none;
 }
+::-webkit-scrollbar {
+  display: none;
+}
+
 html {
   box-sizing: border-box;
   font-size: 12px;
@@ -38,8 +43,24 @@ img {
     padding-left: 20px;
 }
 
-#profile-thumbnail-panel {
-
+#profile-image-panel {
+  position: fixed;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+  background: black;
 }
 
+#profile-image-panel img {
+  height: 200px;
+}
+
+#profile {
+  /* margin-bottom: 200px; */
+  position: absolute;
+}
+
+#profile-image-panel-spacer {
+  margin-top: 210px;
+}
 </style>

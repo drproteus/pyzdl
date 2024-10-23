@@ -1,9 +1,11 @@
 <html>
     {% include "style.html" %}
+<div id="profile">
 {% if profile.image.path %}
 <div id="profile-image-panel">
-    <img src="data:image;base64,{{profile.image.base64}}" style="height: 200px;"/>
+    <img src="data:image;base64,{{profile.image.base64}}"/>
 </div>
+<div id="profile-image-panel-spacer"></div>
 {% endif %}
 <div id="profile-port-info">
     <details>
@@ -49,5 +51,6 @@
 {{profile_json}}
         </pre>
     </details>
+</div>
 </div>
 </html>
