@@ -13,7 +13,8 @@ from wxglade.wxglade_out import (
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 
-base_dir = os.getcwd()
+base_dir = os.path.dirname(os.path.realpath(__file__))
+print(base_dir)
 env = Environment(
     loader=FileSystemLoader(os.path.join(base_dir, "templates")),
     autoescape=select_autoescape(),
