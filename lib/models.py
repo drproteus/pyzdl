@@ -72,6 +72,7 @@ class SourcePort:
 
     def launch(self, args: Optional[list[str]] = None, env: Optional[dict] = None):
         args = args or []
+        env = env or {}
         cmd = [self.executable.path]
         if sys.platform == "darwin" and is_app(self.executable.path):
             cmd = ["open"] + cmd
@@ -83,7 +84,7 @@ class SourcePort:
             pass
         if sys.platform == "linux":
             # TODO: Linux specific behavior.
-            pass
+            env.update(os.environ.copy())
         cmd += expand_args(args)
         subprocess.call(cmd, env=env)
 
