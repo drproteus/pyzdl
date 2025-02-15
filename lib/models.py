@@ -71,7 +71,6 @@ class SourcePort:
     executable: Resource
 
     def is_valid(self) -> bool:
-        # TODO: Validate executable or macOS app is GZDoom source port.
         return self.executable.exists()
 
     def launch(self, args: Optional[list[str]] = None, env: Optional[dict] = None):
@@ -84,13 +83,10 @@ class SourcePort:
                 # append --args so the rest of args passed go to executable and not open
                 cmd += ["--args"]
         if sys.platform == "win32":
-            # TODO: Windows specific behavior.
             env.update(os.environ.copy())
         if sys.platform == "linux":
-            # TODO: Linux specific behavior.
             env.update(os.environ.copy())
         cmd += expand_args(args)
-        print(self.executable.cwd)
         subprocess.call(cmd, env=env, cwd=self.executable.cwd)
 
     @classmethod
