@@ -356,6 +356,7 @@ class MainFrame(MainWindow):
 
     def on_click(self, e):
         self.launch_selected_profile()
+        self.refresh()
 
     def on_update(self, e):
         profile = self.get_selected_profile()
