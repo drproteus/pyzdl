@@ -33,6 +33,10 @@ class Resource:
     def is_directory(self) -> bool:
         return os.path.isdir(self.path)
 
+    @property
+    def cwd(self) -> str:
+        return os.path.dirname(self.path)
+
     @classmethod
     def from_json(cls, d: Optional[Union[str, dict]]) -> Optional["Resource"]:
         if d is None:
@@ -81,12 +85,13 @@ class SourcePort:
                 cmd += ["--args"]
         if sys.platform == "win32":
             # TODO: Windows specific behavior.
-            pass
+            env.update(os.environ.copy())
         if sys.platform == "linux":
             # TODO: Linux specific behavior.
             env.update(os.environ.copy())
         cmd += expand_args(args)
-        subprocess.call(cmd, env=env)
+        print(self.executable.cwd)
+        subprocess.call(cmd, env=env, cwd=self.executable.cwd)
 
     @classmethod
     def from_json(cls, d: dict) -> "SourcePort":
