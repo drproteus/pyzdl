@@ -8,9 +8,8 @@ from typing import Any, Optional
 def _default_root() -> str:
     if os.getenv("PYZDL_ROOT"):
         return os.getenv("PYZDL_ROOT")
-    if getattr(sys, "frozen", False) and not os.getenv("APPIMAGE"):
-        # Portable build: keep config and profiles next to pyZDL.exe. An AppImage
-        # runs from a read-only mount, so it uses the usual config directory.
+    if getattr(sys, "frozen", False):
+        # Portable build: keep config and profiles next to pyZDL.exe.
         return os.path.dirname(os.path.abspath(sys.executable))
     return str(Path.home().joinpath(".config", "pyzdl"))
 

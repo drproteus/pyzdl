@@ -3,10 +3,6 @@ dist/pyZDL.app:
 
 macos: dist/pyZDL.app
 
-.PHONY: appimage
-appimage:
-	bash scripts/build-appimage.sh
-
 .PHONY: clean
 clean:
 	rm -rf dist/*
