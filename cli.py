@@ -2,7 +2,9 @@ import click
 import json
 import os
 import subprocess
+import sys
 
+from lib.detach import relaunch_gui_without_console, release_console_if_detached
 from lib.errors import LoaderError
 from lib.util import default_options, default_gui_options, write_config
 
@@ -220,7 +222,8 @@ def inspect_profile(app, config_path, name, format_type):
 
 @pyzdl.command("gui")
 @default_gui_options
-def gui(config_path, verbose):
+@click.option("--debug", is_flag=True, default=False, help="Keep the console and log.")
+def gui(config_path, verbose, debug):
     """Start the graphical interface."""
     try:
         from gui import run_gui
@@ -229,7 +232,7 @@ def gui(config_path, verbose):
             "The GUI requires wxPython. Install it with: pip install wxPython"
         ) from exc
 
-    run_gui(config_path, verbose)
+    run_gui(config_path, verbose or debug)
 
 
 @config.command("validate")
@@ -245,4 +248,7 @@ def validate_config(app, config_path):
 
 
 if __name__ == "__main__":
+    if relaunch_gui_without_console(sys.argv[1:]):
+        sys.exit(0)
+    release_console_if_detached()
     pyzdl()
