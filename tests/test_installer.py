@@ -56,6 +56,33 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(result.added_ports, ["GZDoom"])
         self.assertTrue(os.path.isfile(os.path.join(self.target, "config.json")))
 
+    def test_existing_config_is_never_overwritten(self):
+        config_path = os.path.join(self.target, "config.json")
+        os.makedirs(self.target)
+        original = '{"profiles": [{"name": "Mine"}]}'
+        with open(config_path, "w") as handle:
+            handle.write(original)
+        found = [FoundPort("GZDoom", os.path.join(self.tmp.name, "gzdoom.exe"))]
+
+        with mock.patch.object(install, "find_source_ports", return_value=found):
+            result = install.install(self.target, source=self.payload, scan_ports=True)
+
+        with open(config_path) as handle:
+            self.assertEqual(handle.read(), original)
+        self.assertTrue(result.config_kept)
+        self.assertEqual(result.added_ports, [])
+
+    def test_malformed_existing_config_does_not_break_install(self):
+        os.makedirs(self.target)
+        with open(os.path.join(self.target, "config.json"), "w") as handle:
+            handle.write("{not json")
+
+        with mock.patch.object(install, "find_source_ports", return_value=[]):
+            result = install.install(self.target, source=self.payload, scan_ports=True)
+
+        self.assertTrue(result.config_kept)
+        self.assertTrue(os.path.isfile(result.exe_path))
+
     def test_scan_is_skipped_by_default(self):
         with mock.patch.object(install, "find_source_ports") as scan:
             install.install(self.target, source=self.payload)

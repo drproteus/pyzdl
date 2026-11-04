@@ -12,9 +12,10 @@ APP_NAME = "pyZDL"
 EXE_NAME = "pyZDL.exe"
 SHORTCUT_NAME = "pyZDL.lnk"
 SW_SHOWMINIMIZED = 7
+CONFIG_NAME = "config.json"
 
 InstallResult = namedtuple(
-    "InstallResult", ["exe_path", "shortcut_path", "added_ports"]
+    "InstallResult", ["exe_path", "shortcut_path", "added_ports", "config_kept"]
 )
 
 
@@ -71,12 +72,13 @@ def install(install_dir, source=None, desktop_shortcut=False, scan_ports=False):
     shortcut_path = os.path.join(install_dir, SHORTCUT_NAME)
     create_gui_shortcut(shortcut_path, exe_path)
 
+    config_path = os.path.join(install_dir, CONFIG_NAME)
+    config_kept = os.path.exists(config_path)
     added = []
-    if scan_ports:
-        config_path = os.path.join(install_dir, "config.json")
+    if scan_ports and not config_kept:
         added = add_ports_to_config(config_path, find_source_ports())
 
     if desktop_shortcut:
         shutil.copy2(shortcut_path, os.path.join(desktop_dir(), SHORTCUT_NAME))
 
-    return InstallResult(exe_path, shortcut_path, added)
+    return InstallResult(exe_path, shortcut_path, added, config_kept)

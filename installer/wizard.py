@@ -92,7 +92,9 @@ class SetupFrame(wx.Frame):
         if self.launch_box.GetValue():
             subprocess.Popen([result.exe_path, "gui"], cwd=install_dir)
         message = f"pyZDL was installed to:\n\n{install_dir}"
-        if self.scan_box.GetValue():
+        if result.config_kept:
+            message += "\n\nAn existing config.json was kept unchanged."
+        elif self.scan_box.GetValue():
             found = ", ".join(result.added_ports) or "none"
             message += f"\n\nSource ports added to the config: {found}"
         wx.MessageBox(message, "pyZDL Setup", wx.OK)
