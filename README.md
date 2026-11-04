@@ -5,6 +5,8 @@ source port, an IWAD, an ordered mod list, extra arguments, and optional
 per-profile config/save directories so that total conversions do not stomp on
 each other's settings.
 
+<img width="2424" height="1864" alt="image" src="https://github.com/user-attachments/assets/4badad61-8dce-4fea-a883-7a4fbeca7a01" />
+
 ## Features
 
 - **Profile library** with search, cover art, and fast keyboard navigation.
