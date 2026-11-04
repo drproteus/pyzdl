@@ -63,6 +63,12 @@ By default the config lives at `~/.config/pyzdl/config.json` (or
 `$PYZDL_ROOT/config.json`). Override it with `--config /path/to/config.json` or
 `PYZDL_CONFIG_PATH`.
 
+The portable Windows build (`pyZDL.exe`, including the installed copy) instead
+defaults to the folder containing the executable, so `config.json`, `profiles\`,
+and `assets\` all stay together. `PYZDL_ROOT` and `--config` still override
+this. Install into a folder you can write to, such as the default
+`%LOCALAPPDATA%\Programs\pyZDL`, rather than `Program Files`.
+
 Profiles are stored under `profiles/<name>/` next to the config file:
 
 ```
@@ -149,3 +155,35 @@ Build the macOS app bundle with:
 ```sh
 make macos
 ```
+
+Build the Windows executables with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-windows.ps1
+```
+
+This produces two single-file programs, both with the launcher icon from
+`assets\pyzdl-launcher.ico` (drawn by `scripts\draw_launcher_icon.py`):
+
+- `dist\pyZDL.exe`: the program, with the Python interpreter and dependencies
+  bundled. `pyZDL.exe profiles ls` and the other CLI commands work from a
+  terminal. `pyZDL.exe gui` starts the GUI without a console window. Add
+  `--debug` to keep the console and its output (`pyZDL.exe gui --debug`).
+- `dist\pyZDL-setup.exe`: a portable setup window that embeds `pyZDL.exe`. It
+  asks for an install folder, then:
+  - copies `pyZDL.exe` there,
+  - always creates `pyZDL.lnk` in that folder. It opens the GUI (`gui` argument),
+  - optionally copies that shortcut to the desktop,
+  - optionally finds installed source ports (GZDoom, Chocolate Doom, and others)
+    and writes them to the install's `config.json`,
+  - optionally launches the GUI when it finishes.
+
+It writes no registry entries, so deleting the folder uninstalls it.
+
+Source port scanning checks `%LOCALAPPDATA%`, `%APPDATA%`, `Program Files`,
+`Program Files (x86)`, and the Scoop `apps` folders (user and global), up to
+three folders deep. For Scoop it uses the `current` link, so paths survive
+updates. Ports already in the config are left alone.
+
+Profile covers chosen with "Set cover" are copied into each profile's folder
+under the config directory (`profiles\<name>\`, next to `pyZDL.exe`).
