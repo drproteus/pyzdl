@@ -1,5 +1,5 @@
 dist/pyZDL.app:
-	python setup.py py2app --iconfile assets/doom-cacodemon.png
+	python setup.py py2app
 
 macos: dist/pyZDL.app
 
@@ -7,9 +7,23 @@ macos: dist/pyZDL.app
 clean:
 	rm -rf dist/*
 
+PYTHON ?= python3
+
 .PHONY: test
 test:
-	python -m unittest -v
+	$(PYTHON) -m unittest -v
+
+.PHONY: lint
+lint:
+	$(PYTHON) -m ruff check .
+
+.PHONY: format
+format:
+	$(PYTHON) -m black .
+
+.PHONY: run
+run:
+	$(PYTHON) cli.py gui
 
 pages/index.html:
 	mkdir -p pages/

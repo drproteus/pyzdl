@@ -8,8 +8,10 @@ Usage:
 from setuptools import setup
 
 APP = ["gui.py"]
-DATA_FILES = ["templates"]
-OPTIONS = {}
+DATA_FILES = ["templates", "assets"]
+OPTIONS = {
+    "packages": ["lib", "wxui"],
+}
 
 setup(
     app=APP,

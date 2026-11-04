@@ -2,11 +2,20 @@ import click
 import json
 import os
 import subprocess
-from lib.util import write_config, default_options
-from gui import main
+
+from lib.errors import LoaderError
+from lib.util import default_options, default_gui_options, write_config
 
 
-@click.group("pyzdl")
+class LoaderGroup(click.Group):
+    def invoke(self, ctx):
+        try:
+            return super().invoke(ctx)
+        except LoaderError as exc:
+            raise click.ClickException(str(exc))
+
+
+@click.group("pyzdl", cls=LoaderGroup)
 def pyzdl():
     pass
 
@@ -37,7 +46,10 @@ def ls_profiles(app, config_path):
 @click.argument("name")
 @default_options
 def show_profile_launch_args(app, config_path, name):
-    click.echo(app.get_profile_launch_args(app.profiles[name]))
+    try:
+        click.echo(app.get_profile_launch_args(app.profiles[name]))
+    except (KeyError, LoaderError) as exc:
+        raise click.ClickException(str(exc))
 
 
 @ports.command("ls")
@@ -140,6 +152,8 @@ def show_config(app, config_path, format_type):
 def edit_config(app, config_path, editor):
     if not editor:
         editor = os.getenv("EDITOR")
+    if not editor:
+        raise click.ClickException("Set $EDITOR or pass an editor command.")
     cmd = [editor, config_path]
     subprocess.call(cmd)
 
@@ -194,14 +208,40 @@ def import_profile(app, config_path, path, name):
 @default_options
 def inspect_profile(app, config_path, name, format_type):
     fp = click.get_text_stream("stdout")
-    profile = app.profiles[name]
+    try:
+        profile = app.profiles[name]
+    except KeyError:
+        raise click.ClickException(f"Could not find profile {name!r}.")
     if format_type == "json":
         json.dump(profile.to_json(), fp, indent=2)
     elif format_type == "zdl" or format_type == "ini":
         profile.to_zdl_ini(fp)
 
 
-pyzdl.add_command(main, "gui")
+@pyzdl.command("gui")
+@default_gui_options
+def gui(config_path, verbose):
+    """Start the graphical interface."""
+    try:
+        from gui import run_gui
+    except ImportError as exc:
+        raise click.ClickException(
+            "The GUI requires wxPython. Install it with: pip install wxPython"
+        ) from exc
+
+    run_gui(config_path, verbose)
+
+
+@config.command("validate")
+@default_options
+def validate_config(app, config_path):
+    errors = []
+    for profile in app.profiles.values():
+        for error in app.validate_profile(profile):
+            errors.append(f"{profile.name}: {error}")
+    if errors:
+        raise click.ClickException("\n".join(errors))
+    click.echo("Configuration OK")
 
 
 if __name__ == "__main__":
