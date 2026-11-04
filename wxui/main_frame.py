@@ -1004,7 +1004,6 @@ class MainFrame(wx.Frame):
             self.app.attach_profile(profile)
             self.app.profiles[name] = profile
             write_config(self.app, self.config_path)
-            self._selected_name = name
             self.refresh_profiles(select=name)
         dialog.Destroy()
 
@@ -1028,7 +1027,6 @@ class MainFrame(wx.Frame):
         self.app.attach_profile(clone)
         self.app.profiles[name] = clone
         write_config(self.app, self.config_path)
-        self._selected_name = name
         self.refresh_profiles(select=name)
 
     def delete_profile(self):
@@ -1116,7 +1114,6 @@ class MainFrame(wx.Frame):
             try:
                 profile = self.app.import_profile(dialog.GetPath())
                 write_config(self.app, self.config_path)
-                self._selected_name = profile.name
                 self.refresh_profiles(select=profile.name)
             except (LoaderError, ValueError, OSError) as exc:
                 self.infobar.ShowMessage(str(exc), wx.ICON_ERROR)
