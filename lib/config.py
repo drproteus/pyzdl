@@ -1,11 +1,22 @@
 import os
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
+
+def _default_root() -> str:
+    if os.getenv("PYZDL_ROOT"):
+        return os.getenv("PYZDL_ROOT")
+    if getattr(sys, "frozen", False):
+        # Portable build: keep config and profiles next to pyZDL.exe.
+        return os.path.dirname(os.path.abspath(sys.executable))
+    return str(Path.home().joinpath(".config", "pyzdl"))
+
+
 # Kept for backwards compatibility.  Prefer AppSettings.pyzdl_root at runtime so
 # that a config loaded with --config uses its own directory for profiles.
-PYZDL_ROOT = os.getenv("PYZDL_ROOT", str(Path.home().joinpath(".config", "pyzdl")))
+PYZDL_ROOT = _default_root()
 CONFIG_PATH = os.getenv("PYZDL_CONFIG_PATH", os.path.join(PYZDL_ROOT, "config.json"))
 
 
