@@ -6,7 +6,7 @@ ASSETS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "assets"
 )
 DEFAULT_COVER = os.path.join(ASSETS_DIR, "doom-cacodemon.png")
-APP_ICON = os.path.join(ASSETS_DIR, "doom-cacodemon.png")
+APP_ICON = os.path.join(ASSETS_DIR, "pyzdl-launcher.png")
 
 
 def font(size_delta: int = 0, bold: bool = False) -> wx.Font:
