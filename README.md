@@ -25,28 +25,34 @@ each other's settings.
 
 ## Install
 
+This project uses [uv](https://docs.astral.sh/uv/) to manage the Python runtime
+and dependencies. Install uv once, then sync the environment:
+
 ```sh
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+uv sync
 ```
 
-On macOS, install `wxPython` from a wheel (or build it) before running the GUI.
+`uv sync` downloads a supported Python (3.10–3.12, required by `wxPython`) if
+needed and creates `.venv/` with all dependencies. You do not need to activate
+it; prefix commands with `uv run` instead.
+
+On macOS, `wxPython` 4.2.2 needs a wheel for your Python version (3.10–3.12);
+uv will fail to build it from source otherwise.
 
 ## Run
 
 ```sh
 # GUI
-python cli.py gui
+uv run python cli.py gui
 
 # or directly
-python gui.py
+uv run python gui.py
 
 # CLI
-python cli.py profiles ls
-python cli.py run profile "Brutal Doom"
-python cli.py config validate
-python cli.py --help
+uv run python cli.py profiles ls
+uv run python cli.py run profile "Brutal Doom"
+uv run python cli.py config validate
+uv run python cli.py --help
 ```
 
 `run.sh` starts the GUI as well.
@@ -125,11 +131,15 @@ against the config directory.
 ## Development
 
 ```sh
-pip install -r requirements-dev.txt
+uv sync          # includes the dev group (black, ruff, pdoc3, py2app)
 make test
 make lint
 make format
 ```
+
+Dependencies are declared in `pyproject.toml` and pinned in `uv.lock`. To add a
+dependency, use `uv add <package>` (or `uv add --dev <package>` for tooling),
+and commit the updated `uv.lock`.
 
 The launcher core in `lib/launcher.py` is deliberately UI-independent and
 unit-tested. The wx UI lives in `wxui/`; `gui.py` is only the entry point.

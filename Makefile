@@ -1,5 +1,5 @@
 dist/pyZDL.app:
-	python setup.py py2app
+	uv run python setup.py py2app
 
 macos: dist/pyZDL.app
 
@@ -7,23 +7,25 @@ macos: dist/pyZDL.app
 clean:
 	rm -rf dist/*
 
-PYTHON ?= python3
+.PHONY: sync
+sync:
+	uv sync
 
 .PHONY: test
 test:
-	$(PYTHON) -m unittest -v
+	uv run python -m unittest -v
 
 .PHONY: lint
 lint:
-	$(PYTHON) -m ruff check .
+	uv run python -m ruff check .
 
 .PHONY: format
 format:
-	$(PYTHON) -m black .
+	uv run python -m black .
 
 .PHONY: run
 run:
-	$(PYTHON) cli.py gui
+	uv run python cli.py gui
 
 pages/index.html:
 	mkdir -p pages/
@@ -38,4 +40,4 @@ clean-pages:
 
 .PHONY: serve-pages
 serve-pages: pages
-	python -m http.server -d pages/
+	uv run python -m http.server -d pages/

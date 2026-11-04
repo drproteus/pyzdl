@@ -1,3 +1,26 @@
+[project]
+name = "pyzdl"
+version = "0.1.0"
+description = "A Python launcher for GZDoom and other Doom source ports"
+readme = "README.md"
+license = { file = "LICENSE.md" }
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "click==8.1.7",
+    "wxPython==4.2.2",
+]
+
+[dependency-groups]
+dev = [
+    "black==24.10.0",
+    "ruff==0.6.9",
+    "pdoc3==0.11.1",
+    "py2app==0.28.8; sys_platform == 'darwin'",
+]
+
+[tool.uv]
+package = false
+
 [tool.black]
 line-length = 88
 target-version = ["py310"]

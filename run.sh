@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python cli.py gui "$@"
+uv run python cli.py gui "$@"
