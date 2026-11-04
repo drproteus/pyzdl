@@ -187,3 +187,19 @@ updates. Ports already in the config are left alone.
 
 Profile covers chosen with "Set cover" are copied into each profile's folder
 under the config directory (`profiles\<name>\`, next to `pyZDL.exe`).
+
+Build the Linux AppImage with:
+
+```sh
+make appimage    # or: bash scripts/build-appimage.sh
+```
+
+This produces `dist/pyZDL-x86_64.AppImage`. Make it executable and run it; with
+no arguments it opens the GUI, and other arguments go to the CLI
+(`./pyZDL-x86_64.AppImage profiles ls`). The script downloads `appimagetool`
+on first use unless one is on `PATH` or set in `APPIMAGETOOL`.
+
+The AppImage keeps its config in `~/.config/pyzdl`, like a source checkout, because
+its own folder is a read-only mount. glibc is not bundled, so build on the
+oldest Linux distribution you need to support; a build made on a newer system
+may not run on older hosts.
