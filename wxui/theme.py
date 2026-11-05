@@ -1,10 +1,25 @@
 import os
+import sys
 
 import wx
 
-ASSETS_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "assets"
-)
+
+def _assets_dir() -> str:
+    """Directory holding the bundled ``assets`` (cover art and icons)."""
+    if getattr(sys, "frozen", False) and sys.platform == "darwin":
+        # py2app keeps data files in Contents/Resources/, not next to the
+        # bundled modules (Contents/Resources/lib/python3.12/...).
+        return os.path.join(
+            os.path.dirname(os.path.dirname(sys.executable)), "Resources", "assets"
+        )
+    # Source checkout and PyInstaller builds (which unpack modules and data
+    # into the same directory tree).
+    return os.path.join(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "assets"
+    )
+
+
+ASSETS_DIR = _assets_dir()
 DEFAULT_COVER = os.path.join(ASSETS_DIR, "doom-cacodemon.png")
 APP_ICON = os.path.join(ASSETS_DIR, "pyzdl-launcher.png")
 

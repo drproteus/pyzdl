@@ -8,9 +8,11 @@ from typing import Any, Optional
 def _default_root() -> str:
     if os.getenv("PYZDL_ROOT"):
         return os.getenv("PYZDL_ROOT")
-    if getattr(sys, "frozen", False):
+    if getattr(sys, "frozen", False) and sys.platform != "darwin":
         # Portable build: keep config and profiles next to pyZDL.exe.
         return os.path.dirname(os.path.abspath(sys.executable))
+    # macOS .app bundles are not writable next to the executable, and the
+    # source checkout uses the user's config directory too.
     return str(Path.home().joinpath(".config", "pyzdl"))
 
 

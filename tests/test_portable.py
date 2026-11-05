@@ -23,7 +23,25 @@ class DefaultRootTests(unittest.TestCase):
         exe = os.path.join(os.path.abspath(os.sep), "Apps", "pyZDL", "pyZDL.exe")
         with mock.patch.object(sys, "frozen", True, create=True):
             with mock.patch.object(sys, "executable", exe):
-                self.assertEqual(config._default_root(), os.path.dirname(exe))
+                with mock.patch.object(sys, "platform", "win32"):
+                    self.assertEqual(config._default_root(), os.path.dirname(exe))
+
+    def test_frozen_macos_uses_user_config_directory(self):
+        exe = os.path.join(
+            os.path.abspath(os.sep),
+            "Applications",
+            "pyZDL.app",
+            "Contents",
+            "MacOS",
+            "pyZDL",
+        )
+        with mock.patch.object(sys, "frozen", True, create=True):
+            with mock.patch.object(sys, "executable", exe):
+                with mock.patch.object(sys, "platform", "darwin"):
+                    self.assertEqual(
+                        config._default_root(),
+                        str(config.Path.home().joinpath(".config", "pyzdl")),
+                    )
 
     def test_pyzdl_root_env_overrides_frozen_default(self):
         exe = os.path.join(os.path.abspath(os.sep), "Apps", "pyZDL.exe")
