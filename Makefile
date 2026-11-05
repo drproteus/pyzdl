@@ -1,7 +1,6 @@
-dist/pyZDL.app:
-	uv run python setup.py py2app
-
-macos: dist/pyZDL.app
+.PHONY: macos
+macos:
+	scripts/build-macos.sh
 
 .PHONY: clean
 clean:
