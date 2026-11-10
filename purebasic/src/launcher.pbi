@@ -1,24 +1,6 @@
 ; Builds the command for a profile and starts it. Mirrors lib/launcher.py: the
 ; same argument order, isolation rules, and error messages.
 
-#PYZ_DETACHED_PROCESS = 8
-#PYZ_FILE_APPEND_DATA = $4
-#PYZ_GENERIC_READ = $80000000
-#PYZ_SHARE_RW = 3
-#PYZ_OPEN_ALWAYS = 4
-#PYZ_OPEN_EXISTING = 3
-#PYZ_FILE_ATTRIBUTE_NORMAL = $80
-#PYZ_WAIT_OBJECT_0 = 0
-
-; Explicit padding keeps the pointer field 8-byte aligned, matching SECURITY_ATTRIBUTES on x64.
-Structure SecAttr
-  nLength.l
-  padding.l
-  lpSecurityDescriptor.i
-  bInheritHandle.l
-  padding2.l
-EndStructure
-
 Structure RunningGame
   Name$
   Handle.i
@@ -46,8 +28,8 @@ Procedure.s StripQuotes(token$)
   ProcedureReturn token$
 EndProcedure
 
-; Splits on spaces and tabs, keeping quoted text together. Quotes are removed from
-; the ends of each token, like the Python version does on Windows.
+; Splits on whitespace, keeping quoted text together. Quotes are removed from the
+; ends of each token, like the Python version does on Windows.
 Procedure.b SplitArgs(text$)
   Define.s token$ = "", c$
   Define.i i, quote = 0, inToken = #False
@@ -104,7 +86,7 @@ Procedure.s FileFlag(path$)
 EndProcedure
 
 ; Fills SpecExe$, SpecCwd$, SpecConfig$, SpecSaves$, SpecLog$, and SpecArgs()
-; from a profile. Does not touch the filesystem beyond existence checks.
+; from a profile. Only checks that paths exist; nothing is created.
 Procedure.b BuildLaunch(*p.Profile)
   Define.s exe$, iwad$, path$, config$, saves$, workdir$, rawPath$
   Define.i isolate, index, portPtr, iwadPtr
@@ -114,7 +96,7 @@ Procedure.b BuildLaunch(*p.Profile)
   If portPtr = 0
     ProcedureReturn Fail("Unknown source port '" + *p\PortName$ + "'.")
   EndIf
-  Define *port.NamedPath : *port = portPtr
+  Define *port.NamedPath = portPtr
   rawPath$ = *port\Path$
   exe$ = ExpandPath(rawPath$, PyzdlRoot$)
   If Not PathExists(exe$)
@@ -125,7 +107,7 @@ Procedure.b BuildLaunch(*p.Profile)
   If iwadPtr = 0
     ProcedureReturn Fail("Unknown IWAD '" + *p\IwadName$ + "'.")
   EndIf
-  Define *iwad.NamedPath : *iwad = iwadPtr
+  Define *iwad.NamedPath = iwadPtr
   rawPath$ = *iwad\Path$
   iwad$ = ExpandPath(rawPath$, PyzdlRoot$)
   If Not IsFilePath(iwad$)
@@ -137,7 +119,7 @@ Procedure.b BuildLaunch(*p.Profile)
   SpecArgs() = iwad$
 
   For index = 0 To ProfileFileCount(*p\ID) - 1
-    Define *file.ProfileFile : *file = ProfileFilePtr(*p\ID, index)
+    Define *file.ProfileFile = ProfileFilePtr(*p\ID, index)
     If *file\Enabled
       rawPath$ = *file\Path$
       path$ = ExpandPath(rawPath$, PyzdlRoot$)
@@ -218,24 +200,36 @@ Procedure.b BuildLaunch(*p.Profile)
   ProcedureReturn #True
 EndProcedure
 
-Procedure.s CommandPreview()
-  Define.s out$ = CmdQuote(SpecExe$)
+; A macOS .app bundle is started with `open`, passing game arguments after --args.
+Procedure.b IsMacAppBundle(path$)
+  If Not #PYZ_IS_MACOS
+    ProcedureReturn #False
+  EndIf
+  ProcedureReturn Bool(ExtLower(path$) = ".app" And IsDirPath(path$))
+EndProcedure
+
+Procedure.s GameCommand()
+  Define.s args$ = ""
   ForEach SpecArgs()
-    out$ + " " + CmdQuote(SpecArgs())
+    args$ + " " + ArgQuote(SpecArgs())
   Next
-  ProcedureReturn out$
+  If IsMacAppBundle(SpecExe$)
+    If ListSize(SpecArgs()) > 0
+      ProcedureReturn "open " + ArgQuote(SpecExe$) + " --args" + args$
+    EndIf
+    ProcedureReturn "open " + ArgQuote(SpecExe$)
+  EndIf
+  ProcedureReturn ArgQuote(SpecExe$) + args$
+EndProcedure
+
+Procedure.s CommandPreview()
+  ProcedureReturn GameCommand()
 EndProcedure
 
 ; Starts the game with stdout and stderr appended to the profile's launch.log.
-; Returns the process handle, or 0 with LastError$ set.
+; Returns a handle for ReapGame, or 0 with LastError$ set.
 Procedure.i StartGame(displayName$)
   Define.s cwd$ = "", wadPath$
-  Define.i logHandle, nulHandle, ok, cwdPointer
-  Define.SecAttr sa
-  Define.STARTUPINFO si
-  Define.PROCESS_INFORMATION pi
-  Define.s cmd$
-
   If SpecConfig$ <> ""
     EnsureDir(DirName(SpecConfig$))
   EndIf
@@ -247,47 +241,13 @@ Procedure.i StartGame(displayName$)
   EndIf
   EnsureDir(DirName(SpecLog$))
 
-  sa\nLength = SizeOf(SecAttr)
-  sa\lpSecurityDescriptor = 0
-  sa\bInheritHandle = #True
-  logHandle = CreateFile_(SpecLog$, #PYZ_FILE_APPEND_DATA, #PYZ_SHARE_RW, @sa, #PYZ_OPEN_ALWAYS, #PYZ_FILE_ATTRIBUTE_NORMAL, 0)
-  nulHandle = CreateFile_("NUL", #PYZ_GENERIC_READ, #PYZ_SHARE_RW, @sa, #PYZ_OPEN_EXISTING, #PYZ_FILE_ATTRIBUTE_NORMAL, 0)
-  If nulHandle = -1
-    ProcedureReturn Fail("Could not open NUL for " + displayName$)
-  EndIf
-  If logHandle = -1
-    logHandle = nulHandle
-  EndIf
-
   SetEnvironmentVariable("DOOMWADDIR", DoomWadDir())
   wadPath$ = DoomWadPathValue()
   If wadPath$ <> ""
-    SetEnvironmentVariable("DOOMWADPATH", wadPath$)
+    SetEnvironmentVariable("DOOMWADPATH", ReplaceString(wadPath$, ";", #PYZ_PATHLIST$))
   EndIf
 
-  si\cb = SizeOf(STARTUPINFO)
-  si\dwFlags = #STARTF_USESTDHANDLES
-  si\hStdInput = nulHandle
-  si\hStdOutput = logHandle
-  si\hStdError = logHandle
-
-  cmd$ = CommandPreview()
-  cwdPointer = 0
-  If cwd$ <> ""
-    cwdPointer = @cwd$
-  EndIf
-  ok = CreateProcess_(0, @cmd$, 0, 0, #True, 0, 0, cwdPointer, @si, @pi)
-
-  If logHandle <> nulHandle
-    CloseHandle_(logHandle)
-  EndIf
-  CloseHandle_(nulHandle)
-
-  If Not ok
-    ProcedureReturn Fail("Could not start " + SpecExe$ + " (error " + Str(GetLastError_()) + ")")
-  EndIf
-  CloseHandle_(pi\hThread)
-  ProcedureReturn pi\hProcess
+  ProcedureReturn PlatformStartProcess(GameCommand(), cwd$, SpecLog$)
 EndProcedure
 
 Procedure.i LaunchProfile(*p.Profile)
@@ -316,9 +276,7 @@ EndProcedure
 ; Returns #True once per exit.
 Procedure.b ReapGame()
   ForEach Running()
-    If WaitForSingleObject_(Running()\Handle, 0) = #PYZ_WAIT_OBJECT_0
-      GetExitCodeProcess_(Running()\Handle, @FinishedCode)
-      CloseHandle_(Running()\Handle)
+    If TryReapGame(Running()\Handle, @FinishedCode)
       FinishedName$ = Running()\Name$
       DeleteElement(Running())
       ProcedureReturn #True

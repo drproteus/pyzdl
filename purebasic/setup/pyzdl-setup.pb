@@ -3,7 +3,12 @@
 
 EnableExplicit
 
+CompilerIf #PB_Compiler_OS <> #PB_OS_Windows
+  CompilerError "The setup program is for Windows only. On other systems, unpack pyZDL into a folder."
+CompilerEndIf
+
 XIncludeFile "..\src\json.pbi"
+XIncludeFile "..\src\platform.pbi"
 XIncludeFile "..\src\core.pbi"
 XIncludeFile "..\src\ini.pbi"
 XIncludeFile "..\src\model.pbi"
@@ -65,7 +70,7 @@ Procedure.b CreateShortcut(linkPath$, targetPath$)
   script$ + "$link.Save()"
   SetEnvironmentVariable("PYZDL_LINK", linkPath$)
   SetEnvironmentVariable("PYZDL_TARGET", targetPath$)
-  RunProgram("powershell", "-NoProfile -ExecutionPolicy Bypass -Command " + CmdQuote(script$), "", #PB_Program_Wait | #PB_Program_Hide)
+  RunProgram("powershell", "-NoProfile -ExecutionPolicy Bypass -Command " + ArgQuote(script$), "", #PB_Program_Wait | #PB_Program_Hide)
   ProcedureReturn Bool(IsFilePath(linkPath$))
 EndProcedure
 
@@ -161,7 +166,7 @@ If CountProgramParameters() > 0
 EndIf
 
 If OpenWindow(#Win_Setup, 0, 0, 560, 380, "pyZDL Setup", #PB_Window_ScreenCentered | #PB_Window_SystemMenu | #PB_Window_MinimizeGadget)
-  HeadingFont = LoadFont(#PB_Any, "Segoe UI", 15, #PB_Font_Bold)
+  HeadingFont = LoadFont(#PB_Any, #PYZ_FONT$, 15, #PB_Font_Bold)
   TextGadget(#S_Heading, 16, 16, 300, 30, "Install pyZDL")
   SetGadgetFont(#S_Heading, FontID(HeadingFont))
   TextGadget(#S_DirLabel, 16, 72, 110, 20, "Install folder:")

@@ -7,8 +7,9 @@ each other's settings.
 
 <img width="2424" height="1864" alt="image" src="https://github.com/user-attachments/assets/4badad61-8dce-4fea-a883-7a4fbeca7a01" />
 
-A PureBasic rewrite for Windows lives in [`purebasic/`](purebasic/README.md). It
-uses the same config and profile files as this version.
+A PureBasic rewrite for Windows, macOS, and Linux lives in
+[`purebasic/`](purebasic/README.md). It is the successor to this Python version,
+which is kept for reference, and it uses the same config and profile files.
 
 ## Features
 

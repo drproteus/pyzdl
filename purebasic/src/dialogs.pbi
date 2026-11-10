@@ -168,7 +168,7 @@ Procedure.b EditStagedEntry(isPort.b, index.i, adding.b)
   Define.i listGadget
   If isPort
     title$ = "Source port"
-    wildcard$ = #WILD_APPS
+    wildcard$ = #PYZ_APP_PATTERN$
     listGadget = #DG_PortList
   Else
     title$ = "IWAD"

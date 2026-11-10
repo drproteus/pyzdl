@@ -1,4 +1,5 @@
-; Shared helpers: paths, file I/O, and error reporting.
+; Shared helpers: paths, file I/O, and error reporting. Paths use the native
+; separator (#PS$). On Windows, "/" is also accepted and converted.
 
 Global LastError$
 
@@ -7,8 +8,11 @@ Procedure.b Fail(message$)
   ProcedureReturn #False
 EndProcedure
 
-Procedure.s Backslashes(count.i)
-  ProcedureReturn ReplaceString(Space(count), " ", "\")
+Procedure.s NativePath(path$)
+  If #PYZ_IS_WINDOWS
+    ProcedureReturn ReplaceString(path$, "/", "\")
+  EndIf
+  ProcedureReturn path$
 EndProcedure
 
 Procedure.s PathJoin(a$, b$)
@@ -21,78 +25,129 @@ Procedure.s PathJoin(a$, b$)
   If Right(a$, 1) = "\" Or Right(a$, 1) = "/"
     ProcedureReturn a$ + b$
   EndIf
-  ProcedureReturn a$ + "\" + b$
+  ProcedureReturn a$ + #PS$ + b$
 EndProcedure
 
 Procedure.b IsAbsPath(path$)
-  If Len(path$) >= 2 And Mid(path$, 2, 1) = ":"
-    ProcedureReturn #True
+  path$ = NativePath(path$)
+  If #PYZ_IS_WINDOWS
+    If Len(path$) >= 2 And Mid(path$, 2, 1) = ":"
+      ProcedureReturn #True
+    EndIf
   EndIf
-  If Left(path$, 1) = "\" Or Left(path$, 1) = "/"
+  If Left(path$, 1) = #PS$
     ProcedureReturn #True
   EndIf
   ProcedureReturn #False
 EndProcedure
 
-; Expands %NAME% references. Unknown names are left as written, like os.path.expandvars.
+; Windows: expands %NAME%. Other platforms: expands $NAME and ${NAME}. Unknown
+; names are left as written, like os.path.expandvars.
 Procedure.s ExpandVars(text$)
-  Define.s out$ = "", name$, value$
-  Define.i start = 1, openPos, closePos
-  While start <= Len(text$)
-    openPos = FindString(text$, "%", start)
-    If openPos = 0
-      Break
+  Define.s out$ = "", name$, value$, c$
+  Define.i i = 1, closePos
+  If #PYZ_IS_WINDOWS
+    Define.i openPos
+    While i <= Len(text$)
+      openPos = FindString(text$, "%", i)
+      If openPos = 0
+        Break
+      EndIf
+      closePos = FindString(text$, "%", openPos + 1)
+      If closePos = 0
+        Break
+      EndIf
+      name$ = Mid(text$, openPos + 1, closePos - openPos - 1)
+      value$ = ""
+      If name$ <> ""
+        value$ = GetEnvironmentVariable(name$)
+      EndIf
+      out$ + Mid(text$, i, openPos - i)
+      If value$ <> ""
+        out$ + value$
+      Else
+        out$ + Mid(text$, openPos, closePos - openPos + 1)
+      EndIf
+      i = closePos + 1
+    Wend
+    ProcedureReturn out$ + Mid(text$, i)
+  EndIf
+
+  While i <= Len(text$)
+    c$ = Mid(text$, i, 1)
+    If c$ <> "$"
+      out$ + c$
+      i + 1
+      Continue
     EndIf
-    closePos = FindString(text$, "%", openPos + 1)
-    If closePos = 0
-      Break
+    name$ = ""
+    If Mid(text$, i + 1, 1) = "{"
+      closePos = FindString(text$, "}", i + 2)
+      If closePos = 0
+        out$ + c$
+        i + 1
+        Continue
+      EndIf
+      name$ = Mid(text$, i + 2, closePos - i - 2)
+      i = closePos + 1
+    Else
+      closePos = i + 1
+      While closePos <= Len(text$) And FindString("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_", Mid(text$, closePos, 1), 1)
+        closePos + 1
+      Wend
+      name$ = Mid(text$, i + 1, closePos - i - 1)
+      i = closePos
     EndIf
-    name$ = Mid(text$, openPos + 1, closePos - openPos - 1)
     value$ = ""
     If name$ <> ""
       value$ = GetEnvironmentVariable(name$)
     EndIf
-    out$ + Mid(text$, start, openPos - start)
     If value$ <> ""
       out$ + value$
+    ElseIf name$ <> ""
+      out$ + "$" + name$
     Else
-      out$ + Mid(text$, openPos, closePos - openPos + 1)
+      out$ + "$"
     EndIf
-    start = closePos + 1
   Wend
-  ProcedureReturn out$ + Mid(text$, start)
+  ProcedureReturn out$
 EndProcedure
 
 Procedure.s ExpandUser(text$)
-  Define.s next$
+  Define.s home$, next$
   If Left(text$, 1) = "~"
     next$ = Mid(text$, 2, 1)
     If next$ = "" Or next$ = "\" Or next$ = "/"
-      ProcedureReturn GetEnvironmentVariable("USERPROFILE") + Mid(text$, 2)
+      home$ = GetHomeDirectory()
+      If Right(home$, 1) = "\" Or Right(home$, 1) = "/"
+        home$ = Left(home$, Len(home$) - 1)
+      EndIf
+      ProcedureReturn home$ + Mid(text$, 2)
     EndIf
   EndIf
   ProcedureReturn text$
 EndProcedure
 
-; Collapses "." and ".." segments and converts "/" to "\".
+; Collapses "." and ".." segments. Keeps a Windows drive or UNC prefix.
 Procedure.s NormPath(path$)
   NewList NormParts.s()
   Define.s prefix$ = "", rest$, part$, out$ = ""
   Define.i i, count, rooted
-  path$ = ReplaceString(path$, "/", "\")
-  If Len(path$) >= 2 And Mid(path$, 2, 1) = ":"
-    prefix$ = Left(path$, 2)
-    rest$ = Mid(path$, 3)
-  ElseIf Left(path$, 2) = "\\"
-    prefix$ = "\\"
-    rest$ = Mid(path$, 3)
-  Else
-    rest$ = path$
+  path$ = NativePath(path$)
+  rest$ = path$
+  If #PYZ_IS_WINDOWS
+    If Len(path$) >= 2 And Mid(path$, 2, 1) = ":"
+      prefix$ = Left(path$, 2)
+      rest$ = Mid(path$, 3)
+    ElseIf Left(path$, 2) = "\\"
+      prefix$ = "\\"
+      rest$ = Mid(path$, 3)
+    EndIf
   EndIf
-  rooted = Bool(Left(rest$, 1) = "\")
-  count = CountString(rest$, "\") + 1
+  rooted = Bool(Left(rest$, 1) = #PS$)
+  count = CountString(rest$, #PS$) + 1
   For i = 1 To count
-    part$ = StringField(rest$, i, "\")
+    part$ = StringField(rest$, i, #PS$)
     If part$ = "" Or part$ = "."
       Continue
     ElseIf part$ = ".."
@@ -109,12 +164,12 @@ Procedure.s NormPath(path$)
   Next
   ForEach NormParts()
     If out$ <> ""
-      out$ + "\"
+      out$ + #PS$
     EndIf
     out$ + NormParts()
   Next
   If rooted
-    ProcedureReturn prefix$ + "\" + out$
+    ProcedureReturn prefix$ + #PS$ + out$
   EndIf
   If out$ = ""
     ProcedureReturn prefix$ + "."
@@ -122,7 +177,8 @@ Procedure.s NormPath(path$)
   ProcedureReturn prefix$ + out$
 EndProcedure
 
-; Equivalent of lib.config.expand_path: ~, %VAR%, and relative paths against base.
+; Equivalent of lib.config.expand_path: ~, environment variables, and relative
+; paths resolved against base.
 Procedure.s ExpandPath(path$, base$ = "")
   Define.s value$
   If path$ = ""
@@ -140,14 +196,14 @@ Procedure.s AbsPath(path$)
 EndProcedure
 
 Procedure.s DirName(path$)
-  Define.s p$ = ReplaceString(path$, "/", "\")
+  Define.s p$ = NativePath(path$)
   Define.i i
   For i = Len(p$) To 1 Step -1
-    If Mid(p$, i, 1) = "\"
+    If Mid(p$, i, 1) = #PS$
       If i = 1
-        ProcedureReturn "\"
+        ProcedureReturn #PS$
       EndIf
-      If i = 3 And Mid(p$, 2, 1) = ":"
+      If #PYZ_IS_WINDOWS And i = 3 And Mid(p$, 2, 1) = ":"
         ProcedureReturn Left(p$, 3)
       EndIf
       ProcedureReturn Left(p$, i - 1)
@@ -157,10 +213,10 @@ Procedure.s DirName(path$)
 EndProcedure
 
 Procedure.s BaseName(path$)
-  Define.s p$ = ReplaceString(path$, "/", "\")
+  Define.s p$ = NativePath(path$)
   Define.i i
   For i = Len(p$) To 1 Step -1
-    If Mid(p$, i, 1) = "\"
+    If Mid(p$, i, 1) = #PS$
       ProcedureReturn Mid(p$, i + 1)
     EndIf
   Next
@@ -279,33 +335,6 @@ Procedure.b WriteTextFileAtomic(path$, text$)
     ProcedureReturn Fail("Could not replace " + path$)
   EndIf
   ProcedureReturn #True
-EndProcedure
-
-; Quotes one argument for a Windows command line, like subprocess.list2cmdline.
-Procedure.s CmdQuote(arg$)
-  Define.s out$, c$
-  Define.i i, slashes = 0
-  If arg$ = ""
-    ProcedureReturn Chr(34) + Chr(34)
-  EndIf
-  If FindString(arg$, " ") = 0 And FindString(arg$, Chr(9)) = 0 And FindString(arg$, Chr(34)) = 0
-    ProcedureReturn arg$
-  EndIf
-  out$ = Chr(34)
-  For i = 1 To Len(arg$)
-    c$ = Mid(arg$, i, 1)
-    If c$ = "\"
-      slashes + 1
-    ElseIf c$ = Chr(34)
-      out$ + Backslashes(slashes * 2 + 1) + Chr(34)
-      slashes = 0
-    Else
-      out$ + Backslashes(slashes) + c$
-      slashes = 0
-    EndIf
-  Next
-  out$ + Backslashes(slashes * 2) + Chr(34)
-  ProcedureReturn out$
 EndProcedure
 
 Procedure.s ExeDir()

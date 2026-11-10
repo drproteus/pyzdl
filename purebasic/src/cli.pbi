@@ -9,6 +9,7 @@ Global CliFormat$
 Global CliHelp.b
 
 Procedure CliError(message$)
+  OpenConsole()
   ConsoleError("Error: " + message$)
 EndProcedure
 
@@ -322,7 +323,7 @@ Procedure.i CmdConfigEdit()
     CliError("Set $EDITOR or pass an editor command.")
     ProcedureReturn 1
   EndIf
-  RunProgram(editor$, CmdQuote(ConfigPath$), "", #PB_Program_Wait)
+  RunProgram(editor$, ArgQuote(ConfigPath$), "", #PB_Program_Wait)
   ProcedureReturn 0
 EndProcedure
 
@@ -373,7 +374,7 @@ Procedure.i CmdRunProfile()
     CliError(LastError$)
     ProcedureReturn 1
   EndIf
-  CloseHandle_(handle)
+  PlatformDetachGame(handle)
   ProcedureReturn 0
 EndProcedure
 
@@ -406,7 +407,7 @@ Procedure.i CmdRunZdl()
     CliError(LastError$)
     ProcedureReturn 1
   EndIf
-  CloseHandle_(handle)
+  PlatformDetachGame(handle)
   ProcedureReturn 0
 EndProcedure
 

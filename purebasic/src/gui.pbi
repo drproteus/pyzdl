@@ -7,7 +7,6 @@
 #WILD_ZDL = "ZDL files (*.zdl;*.ini)|*.zdl;*.ini|All files (*.*)|*.*"
 #WILD_PROFILES = "Profiles (*.json;*.zdl;*.ini)|*.json;*.zdl;*.ini|All files (*.*)|*.*"
 #WILD_CONFIGS = "pyZDL configs (*.json;*.ini;*.zdl)|*.json;*.ini;*.zdl|All files (*.*)|*.*"
-#WILD_APPS = "Programs (*.exe)|*.exe|All files (*.*)|*.*"
 
 Enumeration
   #Win_Main
@@ -186,7 +185,7 @@ EndProcedure
 
 Procedure OpenFolderInExplorer(path$)
   EnsureDir(path$)
-  RunProgram("explorer.exe", CmdQuote(path$), "")
+  OpenPathInShell(path$)
 EndProcedure
 
 Procedure LoadCoverInto(*p.Profile)
@@ -1214,7 +1213,7 @@ Procedure HandleGadget(gadget.i, eventType.i)
     Case #G_BtnOpenFile
       Define *file.ProfileFile = SelectedFilePtr()
       If *file
-        RunProgram("explorer.exe", CmdQuote(*file\Path$), "")
+        OpenPathInShell(*file\Path$)
       EndIf
     Case #G_CfgBrowse : BrowseInto(#G_CfgPath, "Choose a GZDoom config", #False)
     Case #G_SavesBrowse : BrowseInto(#G_SavesPath, "Choose a save folder", #True)
@@ -1272,8 +1271,8 @@ Procedure.i RunGui(startPath$)
     MessageRequester("pyZDL", LastError$, #PB_MessageRequester_Error)
     ProcedureReturn 1
   EndIf
-  FontTitle = LoadFont(#PB_Any, "Segoe UI", 13, #PB_Font_Bold)
-  FontBold = LoadFont(#PB_Any, "Segoe UI", 9, #PB_Font_Bold)
+  FontTitle = LoadFont(#PB_Any, #PYZ_FONT$, 13, #PB_Font_Bold)
+  FontBold = LoadFont(#PB_Any, #PYZ_FONT$, 9, #PB_Font_Bold)
   If Not OpenMainWindow()
     ProcedureReturn 1
   EndIf
